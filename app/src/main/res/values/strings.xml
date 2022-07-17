@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BTRemote</string>
+    <string name="title_activity_remote">RemoteActivity</string>
+    <string name="title_activity_wave_display">WaveDisplayActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+</resources>
