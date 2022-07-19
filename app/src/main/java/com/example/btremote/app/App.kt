@@ -19,6 +19,7 @@ import com.example.btremote.database.cmd.CMDSendDatabase
 import com.example.btremote.database.viewpos.ViewPosAndGesture
 import com.example.btremote.database.viewpos.ViewPosAndGestureDao
 import com.example.btremote.database.viewpos.ViewPosAndGestureDatabase
+import com.example.btremote.protocol.readUartData
 import com.example.btremote.tools.LogUtil
 import com.example.btremote.tools.ToastUtil
 import dagger.hilt.android.HiltAndroidApp
@@ -116,6 +117,7 @@ class App : Application() {
         when (it.what) {
             MESSAGE_READ -> {
                 bluetoothRecData = it.obj as ByteArray
+                readUartData(bluetoothRecData)
             }
         }
         true

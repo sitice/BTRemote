@@ -6,6 +6,5 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 
 class RemoteViewModel :ViewModel(){
-    private val viewPosAndGestures = listOf<ViewPosAndGesture>()
-    val viewPosAndGesturesFlow = MutableStateFlow(viewPosAndGestures)
+
 }

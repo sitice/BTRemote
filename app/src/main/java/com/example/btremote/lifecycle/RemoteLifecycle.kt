@@ -17,10 +17,6 @@ class RemoteLifecycle(
 
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
-        viewModel.viewModelScope.launch(Dispatchers.IO) {
-            val dao = ViewPosAndGestureDatabase.getInstance(activity).viewPosAndGestureDao()
-            viewModel.viewPosAndGesturesFlow.value = dao.getViewPosAndGestures()
-        }
     }
 
     override fun onDestroy(owner: LifecycleOwner) {

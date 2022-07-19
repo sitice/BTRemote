@@ -18,13 +18,14 @@ import android.view.MotionEvent;
 import android.view.View;
 
 
+import com.example.btremote.app.App;
+
 import org.jetbrains.annotations.NotNull;
 
 @SuppressLint("ViewConstructor")
 public class MyRockerView extends View {
     private static final String TAG = "RockerView";
     boolean debug = false;
-    private int cnt = 0;
     private static final int DEFAULT_SIZE = 400;
     private static final float DEFAULT_ROCKER_SCALE = 0.45f;//默认半径为背景的1/2
 
@@ -217,7 +218,7 @@ public class MyRockerView extends View {
         mCenterPoint.set(cx, cy);
         // 可移动区域的半径
         float mRockerScale = DEFAULT_ROCKER_SCALE;
-        mAreaRadius = (measuredWidth <= measuredHeight) ? (int) (cx / (mRockerScale + 1)) : (int) (cy / (mRockerScale + 1));
+        mAreaRadius = (measuredWidth <= measuredHeight) ? (int) (cx / (mRockerScale/4 + 1)) : (int) (cy / (mRockerScale/4 + 1));
         mRockerRadius = (int) (mAreaRadius * mRockerScale);//摇杆半径为背景的一半
         // 摇杆位置
         if (0 == mRockerPosition.x || 0 == mRockerPosition.y) {
@@ -270,7 +271,7 @@ public class MyRockerView extends View {
                 baseDistance = mAreaRadius + 2;
                 if (debug)
                     Log.e("baseDistance", baseDistance + "");
-                mRockerPosition = getRockerPositionPoint(mCenterPoint, new Point((int) moveX, (int) moveY), mAreaRadius + mRockerRadius, mRockerRadius);
+                mRockerPosition = getRockerPositionPoint(mCenterPoint, new Point((int) moveX, (int) moveY), mAreaRadius + mRockerRadius/4.0f, mRockerRadius);
                 moveRocker(mRockerPosition.x, mRockerPosition.y);
                 break;
             case MotionEvent.ACTION_UP:// 抬起
@@ -285,6 +286,7 @@ public class MyRockerView extends View {
                 moveRocker(mCenterPoint.x, mCenterPoint.y);
                 break;
         }
+
         return true;
     }
 
@@ -311,16 +313,12 @@ public class MyRockerView extends View {
 
         if (lenXY + rockerRadius <= regionRadius) { // 触摸位置在可活动范围内
             // 回调 返回参数
-            cnt++;
-            if (cnt >= 10)
                 callBack(angle, (int) lenXY);
             return touchPoint;
         } else { // 触摸位置在可活动范围以外
             // 计算要显示的位置
             int showPointX = (int) (centerPoint.x + (regionRadius - rockerRadius) * Math.cos(radian));
             int showPointY = (int) (centerPoint.y + (regionRadius - rockerRadius) * Math.sin(radian));
-            cnt++;
-            if (cnt >= 10)
                 callBack(angle, (int) Math.sqrt((showPointX - centerPoint.x) * (showPointX - centerPoint.x) + (showPointY - centerPoint.y) * (showPointY - centerPoint.y)));
             return new Point(showPointX, showPointY);
         }
