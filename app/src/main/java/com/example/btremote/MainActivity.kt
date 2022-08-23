@@ -9,6 +9,7 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Surface
 import androidx.compose.runtime.SideEffect
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.btremote.app.App
 import com.example.btremote.compose.MainActivityScaffold
 import com.example.btremote.lifecycle.MainLifecycle
 import com.example.btremote.tools.WindowManager
@@ -30,10 +32,9 @@ import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 
-
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, true)
@@ -41,17 +42,15 @@ class MainActivity : ComponentActivity() {
             BTRemoteTheme {
                 ProvideWindowInsets {
                     val systemUiController = rememberSystemUiController()
-                    val isProductScreen = remember {
-                        mutableStateOf(false)
-                    }
+
                     SideEffect {
                             systemUiController.setSystemBarsColor(
-                                color = if (isProductScreen.value) Color(0xff0e2441) else Color.White,
-                                darkIcons = !isProductScreen.value
+                                color =Color.White,
+                                darkIcons = true
                             )
                     }
-                    Surface(modifier = Modifier.fillMaxSize(), color = if (isProductScreen.value) Color(0xff424250) else Color.White) {
-                        MainActivityScaffold(isProductScreen,this)
+                    Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
+                        MainActivityScaffold()
                     }
                 }
             }
@@ -60,5 +59,10 @@ class MainActivity : ComponentActivity() {
         lifecycle.addObserver(MainLifecycle(viewModel = model, activity = this,lifecycle))
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
+    override fun onResume() {
+        super.onResume()
+        App.wifiService.getNetStatus()
+    }
 
 }

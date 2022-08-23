@@ -14,7 +14,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.btremote.app.App
-import com.example.btremote.app.App.Companion.bluetoothRecData
 import com.example.btremote.compose.Screens
 import com.example.btremote.database.cmd.CMDSend
 import com.example.btremote.tools.EasyDataStore
@@ -35,8 +34,6 @@ const val STRING_DATA = 1
 class MainViewModel @Inject constructor() : ViewModel() {
 
     lateinit var requestLauncher: ActivityResultLauncher<Intent>
-    val sendStringFlow = MutableStateFlow("")
-    val recDataFlow = MutableStateFlow(bluetoothRecData)
     val sendTypeFlow = MutableStateFlow(HEX_DATA)
     val recTypeFlow = MutableStateFlow(HEX_DATA)
 

@@ -1,22 +1,28 @@
 package com.example.btremote.compose
 
+import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,28 +30,32 @@ import com.example.btremote.MainActivity
 import com.example.btremote.R
 import com.example.btremote.app.App
 import com.example.btremote.app.BLUETOOTHStatus
+import com.example.btremote.app.WIFIStatus
 import com.example.btremote.compose.about.About
 import com.example.btremote.compose.baseSendRec.BaseSendRec
+import com.example.btremote.compose.dfprotocol.DFProtocol
+import com.example.btremote.compose.esp32cam.Esp32Cam
 import com.example.btremote.compose.tab.BottomTab
 import com.example.btremote.compose.tab.Screen
 import com.example.btremote.compose.more.MoreShowCompose
 import com.example.btremote.compose.product.*
-import com.example.btremote.compose.remote.RemoteCompose
-import com.example.btremote.compose.waveDisplay.WaveDisplayCompose
-import com.example.btremote.tools.WindowManager
+import com.example.btremote.lifecycle.REQUEST_ENABLE_BT
+import com.example.btremote.tools.ToastUtil
 import com.example.btremote.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
 
+@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+@SuppressLint("MissingPermission")
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun MainActivityScaffold(isProductScreen: MutableState<Boolean>, activity: MainActivity) {
+fun MainActivityScaffold(context: Context = LocalContext.current) {
 
     val model: MainViewModel = viewModel()
 
     val navController = rememberNavController()
 
-    val bluetoothStatus = App.bluetoothStateFlow.collectAsState()
+
 
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -53,6 +63,10 @@ fun MainActivityScaffold(isProductScreen: MutableState<Boolean>, activity: MainA
         mutableStateOf(false)
     }
     val openBluetoothDialog = remember {
+        mutableStateOf(false)
+    }
+
+    val openUSBDialog = remember {
         mutableStateOf(false)
     }
 
@@ -68,18 +82,36 @@ fun MainActivityScaffold(isProductScreen: MutableState<Boolean>, activity: MainA
         mutableStateOf(true)
     }
 
-
-    ShowBluetoothDevice(openDialog = openBluetoothDialog)
+    ShowBluetoothDevice(openDialog = openBluetoothDialog) {
+        if (it) {
+            val bluetoothAdapter: BluetoothAdapter = App.bluetoothService.mManager.adapter
+            if (!bluetoothAdapter.isEnabled) {
+                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                model.requestLauncher.launch(intent)
+                val activity = context as MainActivity
+                activity.setResult(REQUEST_ENABLE_BT)
+            }
+        } else {
+            val bluetoothAdapter: BluetoothAdapter = App.bluetoothService.mManager.adapter
+            if (bluetoothAdapter.isEnabled) {
+                bluetoothAdapter.disable()
+            }
+        }
+    }
     ShowWifiDevice(openDialog = openWifiDialog)
-
+    ShowUSBDevice(openDialog = openUSBDialog)
     Scaffold(
-        backgroundColor = if (isProductScreen.value) Color(0xff424250) else Color(0xffeff3f6),
+        backgroundColor = Color(0xffeff3f6),
         scaffoldState = scaffoldState,
         topBar = {
             if (isShowTopBar.value)
-                TopAppBar(title = {
-                    Text(text = "DFRemote", fontFamily = FontFamily.Cursive, fontWeight = FontWeight(700))
-                }, backgroundColor = if (isProductScreen.value) Color(0xff0e2441) else Color.White, navigationIcon = {
+                TopAppBar(modifier = Modifier.height(50.dp), title = {
+                    Text(
+                        text = "DFRemote",
+                        fontFamily = FontFamily.Cursive,
+                        fontWeight = FontWeight(700)
+                    )
+                }, backgroundColor = Color.White, navigationIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_menu_black_24dp),
                         contentDescription = null,
@@ -91,26 +123,7 @@ fun MainActivityScaffold(isProductScreen: MutableState<Boolean>, activity: MainA
                             }
                         })
                 }, actions = {
-
-                    IconButton(onClick = { openBluetoothDialog.value = true }) {
-                        Icon(
-                            painter = painterResource(
-                                id = when (bluetoothStatus.value) {
-                                    BLUETOOTHStatus.DISABLE -> R.drawable.baseline_bluetooth_disabled_black_24dp
-                                    BLUETOOTHStatus.DISCONNECTED -> R.drawable.baseline_bluetooth_black_24dp
-                                    BLUETOOTHStatus.CONNECTED -> R.drawable.baseline_bluetooth_connected_black_24dp
-                                    else -> {
-                                        R.drawable.baseline_bluetooth_black_24dp
-                                    }
-                                }
-                            ), contentDescription = null
-                        )
-                    }
-                    IconButton(onClick = { openWifiDialog.value = true }) {
-                        Icon(painter = painterResource(id = R.drawable.baseline_signal_wifi_off_black_24dp), contentDescription = null)
-
-                    }
-                    Spacer(modifier = Modifier.width(20.dp))
+                    ConnectBar(openBluetoothDialog,openWifiDialog,openUSBDialog,false)
                 })
 
         },
@@ -122,25 +135,22 @@ fun MainActivityScaffold(isProductScreen: MutableState<Boolean>, activity: MainA
             }
         },
         drawerContent = {
-            DividerContentCompose(navController, scope, scaffoldState, nowScreen,activity)
+            DividerContentCompose(navController, scope, scaffoldState, nowScreen)
         },
     ) { padding ->
         NavHost(navController, startDestination = Screen.HomeScreen.id, Modifier.padding(padding)) {
             composable(Screen.HomeScreen.id) {
                 model.nowScreenLiveData.value = Screens.mainScreen
                 isOpenBottomSheet.value = true
-                isProductScreen.value = false
                 isShowTopBar.value = true
                 if (nowScreen.value == Screen.HomeScreen) {
                     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                         Banner()
                         MoreShowCompose()
-                        ProductListCompose()
-                        //DeviceCompose(navController)
-
+                        ProductListCompose(navController)
                     }
                 } else if (nowScreen.value == Screen.DataScreen) {
-                    //MoreShowCompose()
+                    AdvanceScreen(navController)
                     model.nowScreenLiveData.value = Screens.moreScreen
 
                 } else if (nowScreen.value == Screen.ViewScreen) {
@@ -152,30 +162,38 @@ fun MainActivityScaffold(isProductScreen: MutableState<Boolean>, activity: MainA
             composable(Screens.productScreen) {
                 model.nowScreenLiveData.value = Screens.productScreen
                 isOpenBottomSheet.value = false
-                isProductScreen.value = true
                 isShowTopBar.value = true
                 ProductScreen(navController)
             }
             composable(Screens.settingScreen) {
                 model.nowScreenLiveData.value = Screens.settingScreen
                 isOpenBottomSheet.value = false
-                isProductScreen.value = false
                 isShowTopBar.value = true
                 Setting()
             }
             composable(Screens.aboutScreen) {
                 model.nowScreenLiveData.value = Screens.aboutScreen
                 isOpenBottomSheet.value = false
-                isProductScreen.value = false
                 isShowTopBar.value = true
                 About()
             }
             composable(Screens.debugScreen) {
                 model.nowScreenLiveData.value = Screens.debugScreen
                 isOpenBottomSheet.value = false
-                isProductScreen.value = false
                 isShowTopBar.value = true
                 DebugCompose()
+            }
+            composable(Screens.protocolScreen) {
+                model.nowScreenLiveData.value = Screens.protocolScreen
+                isOpenBottomSheet.value = false
+                isShowTopBar.value = true
+                DFProtocol()
+            }
+            composable(Screens.esp32camScreen) {
+                model.nowScreenLiveData.value = Screens.esp32camScreen
+                isOpenBottomSheet.value = false
+                isShowTopBar.value = true
+                Esp32Cam()
             }
         }
     }

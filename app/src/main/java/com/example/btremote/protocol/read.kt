@@ -1,5 +1,7 @@
 package com.example.btremote.protocol
 
+import android.util.Log
+
 val DF_CHARIOT_ADDRESS = 0x00..0x0f
 val DF_DRONE_ADDRESS = 0x10..0x1f
 val ANDROID_ADDRESS = 0xD0..0xDF
@@ -14,6 +16,8 @@ const val READ_DATA_TYPE = 0x04
 const val RETURN_DATA_TYPE = 0x05
 const val CUSTOM_TYPE = 0xFF
 
+const val REC_MAX = 50
+
 enum class RecAddressType {
     ANDROID_ADDRESS_TYPE,
     DESKTOP_ADDRESS_TYPE,
@@ -24,9 +28,14 @@ enum class RecAddressType {
     UNKNOWN_TYPE
 }
 
-private var recAddressType: RecAddressType? = null
+var analyzeData: (i: ByteArray) -> Unit = {}
 
-private var data: ByteArray = ByteArray(50)
+private var recAddressType: RecAddressType? = null
+fun readProtocolCallBack(mAnalyzeData: (i: ByteArray) -> Unit) {
+    analyzeData = mAnalyzeData
+}
+
+private var data: ByteArray = ByteArray(REC_MAX)
 private var recAddress = 0//通道类型
 
 private var recType = 0//控制类型
@@ -119,8 +128,8 @@ fun readUartData(s: ByteArray) {
                     CUSTOM_TYPE -> {
                         recLength = when (controlType) {
                             else -> {
-                                state = 0
-                                0
+                                //state = 0
+                                1
                             }
                         }
                     }
@@ -134,7 +143,7 @@ fun readUartData(s: ByteArray) {
             }
             5 -> {
                 data[nowCount++] = i
-                if (nowCount - 5 >= recAddress){
+                if (nowCount - 5 >= recLength) {
                     state = 6
                 }
             }
@@ -142,27 +151,29 @@ fun readUartData(s: ByteArray) {
                 state = if (i == 0xFD.toByte()) {
                     data[nowCount] = i
                     7
-                } else 0
+                } else {
+                    nowCount = 5
+                    0
+                }
             }
             7 -> {
                 if (i == data.sum().toByte()) {
-                    analyzeData()
+                    analyzeData(data.copyOfRange(1, nowCount))
                 }
                 recAddress = 0
                 recType = 0//控制类型
-                controlType = 0//具体类型
+                controlType = 0//具体类型b n
                 state = 0
+                nowCount = 5
             }
             else -> {
                 recAddress = 0
                 recType = 0//控制类型
                 controlType = 0//具体类型
                 state = 0
+                nowCount = 5
             }
         }
     }
 }
 
-fun analyzeData() {
-
-}

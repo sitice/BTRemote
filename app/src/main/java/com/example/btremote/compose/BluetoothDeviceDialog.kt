@@ -22,6 +22,7 @@ import com.airbnb.lottie.compose.*
 import com.example.btremote.MainActivity
 import com.example.btremote.R
 import com.example.btremote.app.App
+import com.example.btremote.app.App.Companion.bluetoothStateFlow
 import com.example.btremote.app.BLUETOOTHStatus
 import com.example.btremote.lifecycle.REQUEST_ENABLE_BT
 import com.example.btremote.tools.ToastUtil
@@ -31,9 +32,11 @@ import com.example.btremote.viewmodel.MainViewModel
 
 @SuppressLint("MissingPermission")
 @Composable
-fun ShowBluetoothDevice(openDialog: MutableState<Boolean>, context:Context = LocalContext.current) {
-    val model:MainViewModel = viewModel()
-    val switch = App.bluetoothStateFlow.collectAsState()
+fun ShowBluetoothDevice(
+    openDialog: MutableState<Boolean>,
+    onCheckedChange: (check: Boolean) -> Unit
+) {
+    val switch = bluetoothStateFlow.collectAsState()
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.load))
     val progress by animateLottieCompositionAsState(composition = composition,
         speed = 1f, // 加快播放速度（2倍速）
@@ -64,22 +67,7 @@ fun ShowBluetoothDevice(openDialog: MutableState<Boolean>, context:Context = Loc
                             modifier = Modifier.padding(top = 2.dp),
                             checked = switch.value != BLUETOOTHStatus.DISABLE,
                             colors = SwitchDefaults.colors(checkedThumbColor = Blue),
-                            onCheckedChange = {
-                                if (it){
-                                    val bluetoothAdapter: BluetoothAdapter = App.bluetoothService.mManager.adapter
-                                    if (!bluetoothAdapter.isEnabled){
-                                        val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                                        model.requestLauncher.launch(intent)
-                                        val activity = context as MainActivity
-                                        activity.setResult(REQUEST_ENABLE_BT)
-                                    }
-                                }else{
-                                    val bluetoothAdapter: BluetoothAdapter = App.bluetoothService.mManager.adapter
-                                    if (bluetoothAdapter.isEnabled){
-                                        bluetoothAdapter.disable()
-                                    }
-                                }
-                            })
+                            onCheckedChange = onCheckedChange)
                         Spacer(modifier = Modifier.width(70.dp))
                         if (scanState.value)
                             LottieAnimation(composition = composition, progress = progress,Modifier.height(60.dp))
@@ -91,13 +79,3 @@ fun ShowBluetoothDevice(openDialog: MutableState<Boolean>, context:Context = Loc
         }
     }
 }
-
-//@Preview
-//@Composable
-//fun ShowBluetoothDevicePreview()
-//{
-//    val a = remember {
-//        mutableStateOf(true)
-//    }
-//    ShowBluetoothDevice(a)
-//}

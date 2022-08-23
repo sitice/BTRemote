@@ -1,5 +1,6 @@
 package com.example.btremote.compose.baseSendRec
 
+import android.content.Context
 import android.media.Image
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -13,34 +14,52 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.decapitalize
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.room.ColumnInfo
 import androidx.room.util.UUIDUtil
+import com.alibaba.fastjson.JSON
 import com.example.btremote.R
 import com.example.btremote.app.App
-import com.example.btremote.app.App.Companion.cmdSendDao
 import com.example.btremote.database.cmd.CMDSend
 import com.example.btremote.database.cmd.CMDSendDatabase
+import com.example.btremote.protocol.bytesToHexString
+import com.example.btremote.protocol.strToByteArray
+import com.example.btremote.protocol.string2Byte
 import com.example.btremote.tools.EasyDataStore
+import com.example.btremote.tools.EasyDataStore.dataStore1
 import com.example.btremote.tools.LogUtil
-import com.example.btremote.tools.WindowManager.bytesToHexString
+import com.example.btremote.tools.SaveDataToLocalFile
+import com.example.btremote.tools.ToastUtil
 import com.example.btremote.ui.theme.roundedCorner10dp
 import com.example.btremote.viewmodel.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.suspendCoroutine
@@ -51,14 +70,32 @@ const val moreRecSendScreen = 1
 const val advanceRecSendScreen = 2
 
 @Composable
-fun BaseSendRec() {
+fun BaseSendRec(model: MainViewModel = viewModel()) {
 
     var nowScreen by remember {
         mutableStateOf(baseRecSendScreen)
     }
 
+    val rec = remember {
+        mutableStateOf("")
+    }
+    val recType = model.recTypeFlow.collectAsState()
+    LaunchedEffect(UInt) {
+        App.bluetoothRecDataFlow.collect { bytes ->
+            if (bytes.isNotEmpty()) {
+                rec.value += if (recType.value == STRING_DATA) String(
+                    bytes
+                ).replace("\\n", "\n")
+                    .replace("\\t", "\t") else bytesToHexString(bytes)
+            }
+        }
+    }
+
     Column {
-        Card(modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 5.dp), shape = RoundedCornerShape(10.dp)) {
+        Card(
+            modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 5.dp),
+            shape = RoundedCornerShape(10.dp)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,50 +152,91 @@ fun BaseSendRec() {
                     Text(text = "高级收发", fontSize = 11.sp)
                 }
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Button(
-                        onClick = {
-                            nowScreen = advanceRecSendScreen
-
-                        },
-                        modifier = Modifier
-                            .width(60.dp)
-                            .height(35.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = if (nowScreen == advanceRecSendScreen) Color(0xffffdacc) else Color.White,
-                            contentColor = Color.Black
-                        ),
-                        elevation = null
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.protolrec),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = Color.Black
-                        )
-                    }
-                    Text(text = "协议解析", fontSize = 11.sp)
-                }
             }
 
         }
         if (nowScreen == baseRecSendScreen)
-            BaseRecScreen()
+            BaseRecScreen(rec, recType)
         else if (nowScreen == moreRecSendScreen)
             MoreRecScreen()
-        else
-            AdvanceRecScreen()
+//        else
+//            AdvanceRecScreen()
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1F)
+                .padding(start = 30.dp, end = 30.dp, top = 10.dp)
+                .border(2.dp, color = Color.Blue, shape = roundedCorner10dp),
+            shape = roundedCorner10dp
+        )
+        {
+            Column(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
+                Text(text = "Receive", modifier = Modifier.padding(10.dp), fontSize = 12.sp)
+                Divider(modifier = Modifier.fillMaxWidth())
+                Text(
+                    text = rec.value, modifier = Modifier
+                        .padding(top = 10.dp)
+                        .verticalScroll(rememberScrollState())
+                )
+            }
+        }
+        Row(
+            modifier = Modifier
+                .padding(start = 30.dp, end = 30.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = {
+                    model.recTypeFlow.value =
+                        if (model.recTypeFlow.value == HEX_DATA) STRING_DATA else HEX_DATA
+                },
+                modifier = Modifier
+                    .padding(start = 40.dp, top = 10.dp, bottom = 10.dp, end = 40.dp)
+                    .width(80.dp)
+                    .height(40.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color(0xA05e71f6),
+                    contentColor = Color.Black
+                ),
+                elevation = null
+            ) {
+                Icon(
+                    painter = painterResource(id = if (recType.value == STRING_DATA) R.drawable.s else R.drawable.h),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.Black
+                )
+            }
+            Button(
+                onClick = { rec.value = "" }, modifier = Modifier
+                    .padding(start = 40.dp, top = 10.dp, bottom = 10.dp, end = 40.dp)
+                    .width(80.dp)
+                    .height(40.dp), shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color(0xa0fc5531),
+                    contentColor = Color.Black
+                ),
+                elevation = null
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.round_delete_forever_black_48dp),
+                    contentDescription = null
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun BaseRecScreen() {
+fun BaseRecScreen(rec: MutableState<String>, recType: State<Int>) {
     val model: MainViewModel = viewModel()
-    val rec = model.recDataFlow.collectAsState()
-    val send = model.sendStringFlow.collectAsState()
-    val recType = model.recTypeFlow.collectAsState()
+
     val sendType = model.sendTypeFlow.collectAsState()
+
     // 定义一个可观测的text，用来在TextField中展示
     var text by remember {
         mutableStateOf("")
@@ -172,9 +250,15 @@ fun BaseRecScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
-                onClick = { model.sendTypeFlow.value = if (model.sendTypeFlow.value == HEX_DATA) STRING_DATA else HEX_DATA }, modifier = Modifier
+                onClick = {
+                    model.sendTypeFlow.value =
+                        if (model.sendTypeFlow.value == HEX_DATA) STRING_DATA else HEX_DATA
+                },
+                modifier = Modifier
                     .width(80.dp)
-                    .height(40.dp), shape = RoundedCornerShape(20.dp), colors = ButtonDefaults.buttonColors(
+                    .height(40.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color(0xA05e71f6),
                     contentColor = Color.Black
                 ),
@@ -201,6 +285,7 @@ fun BaseRecScreen() {
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = roundedCorner10dp,
+                textStyle = TextStyle(fontSize = 11.sp),
                 value = text, // 显示文本
                 onValueChange = { text = it }, // 文字改变时，就赋值给text
                 label = { Text(text = "Input") }, // label是Input
@@ -210,7 +295,13 @@ fun BaseRecScreen() {
                         contentDescription = null,
                         modifier = Modifier
                             .size(25.dp)
-                            .clickable { model.sendStringFlow.value += text }) // 给图标添加点击事件，点击就吐司提示内容
+                            .clickable {
+                                App.bluetoothService.writeData(
+                                    if (sendType.value == STRING_DATA) text.toByteArray() else string2Byte(
+                                        text
+                                    )
+                                )
+                            }) // 给图标添加点击事件，点击就吐司提示内容
                 },
                 leadingIcon = @Composable {
                     Image(imageVector = Icons.Filled.Clear, // 清除图标
@@ -221,84 +312,147 @@ fun BaseRecScreen() {
             )
         }
 
-
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1F)
-                .padding(start = 30.dp, end = 30.dp, top = 10.dp)
-                .border(2.dp, color = Color.Blue, shape = roundedCorner10dp), shape = roundedCorner10dp
-        )
-        {
-            Column(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
-                Text(text = "Receive", modifier = Modifier.padding(10.dp), fontSize = 12.sp)
-                Divider(modifier = Modifier.fillMaxWidth())
-                (if (recType.value == STRING_DATA) String(rec.value, StandardCharsets.UTF_8) else bytesToHexString(rec.value))?.let {
-                    Text(
-                        text = it, modifier = Modifier
-                            .padding(top = 10.dp)
-                            .verticalScroll(rememberScrollState())
-                    )
-                }
-            }
-        }
-        Row(
-            modifier = Modifier
-                .padding(start = 30.dp, end = 30.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(
-                onClick = { model.recTypeFlow.value = if (model.recTypeFlow.value == HEX_DATA) STRING_DATA else HEX_DATA }, modifier = Modifier
-                    .padding(start = 40.dp, top = 10.dp, bottom = 10.dp, end = 40.dp)
-                    .width(80.dp)
-                    .height(40.dp), shape = RoundedCornerShape(20.dp), colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xA05e71f6),
-                    contentColor = Color.Black
-                ),
-                elevation = null
-            ) {
-                Icon(
-                    painter = painterResource(id = if (recType.value == STRING_DATA) R.drawable.s else R.drawable.h),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.Black
-                )
-            }
-            Button(
-                onClick = { model.recDataFlow.value = byteArrayOf() }, modifier = Modifier
-                    .padding(start = 40.dp, top = 10.dp, bottom = 10.dp, end = 40.dp)
-                    .width(80.dp)
-                    .height(40.dp), shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xa0fc5531),
-                    contentColor = Color.Black
-                ),
-                elevation = null
-            ) {
-                Image(painter = painterResource(id = R.drawable.round_delete_forever_black_48dp), contentDescription = null)
-            }
-        }
     }
 
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
-@Composable
-fun MoreRecScreen() {
-    val model: MainViewModel = viewModel()
-    val rec = model.recDataFlow.collectAsState()
-    val send = model.sendStringFlow.collectAsState()
-    val recType = model.recTypeFlow.collectAsState()
-    val sendType = model.sendTypeFlow.collectAsState()
+var cnt = 0
 
-    val cmdList = remember {
-        mutableStateOf(listOf<CMDSend>())
+@OptIn(
+    ExperimentalMaterialApi::class, ExperimentalFoundationApi::class,
+    ExperimentalComposeUiApi::class
+)
+@Composable
+fun MoreRecScreen(context: Context = LocalContext.current) {
+
+    var array = ArrayList<Cmd>()
+    val data = SaveDataToLocalFile.load(context, "CMDSend")
+    if (data == null) {
+        repeat(3) {
+            array.add(Cmd("cmd$it", "", "hex"))
+        }
+        SaveDataToLocalFile.save(context, "CMDSend", JSON.toJSONString(array))
+    } else {
+        array = JSON.parseArray(data, Cmd::class.java) as ArrayList<Cmd>
     }
 
-    Column {
 
+    val cmdList = remember {
+        mutableStateOf(array.toList())
+    }
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
+    if (openDialog)
+        Dialog(
+            onDismissRequest = { openDialog = false }
+        ) {
+            Surface(
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(Color.White)
+                        .padding(20.dp)
+                        .fillMaxWidth()
+                        .height(180.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    var text by remember {
+                        mutableStateOf("")
+                    }
+
+                    Text(text = "请输入指令名字", fontWeight = FontWeight(700), fontSize = 18.sp)
+                    Spacer(modifier = Modifier.height(30.dp))
+                    TextField(
+                        textStyle = TextStyle(fontSize = 11.sp)
+                        ,
+                        // 指定下划线颜色
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = Color.Transparent, // 有焦点时的颜色，透明
+                            unfocusedIndicatorColor = Color.Transparent, // 无焦点时的颜色，绿色
+                            errorIndicatorColor = Color.Red, // 错误时的颜色，红色
+                            disabledIndicatorColor = Color.Gray // 不可用时的颜色，灰色
+                        ),
+                        isError = false,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = roundedCorner10dp,
+                        value = text, // 显示文本
+                        onValueChange = {
+                            text = it
+                        }, // 文字改变时，就赋值给text
+                        label = { Text(text = "名字") }, // label是Input
+                        leadingIcon = @Composable {
+                            Image(imageVector = Icons.Filled.Clear, // 清除图标
+                                contentDescription = null,
+                                modifier = Modifier.clickable {
+                                    text = ""
+                                }) // 给图标添加点击事件，点击就清空text
+
+                        }, placeholder = @Composable { Text(text = "请输入名字", fontSize = 11.sp) }) // 不输入内容时的占位符
+                    Spacer(modifier = Modifier.height(30.dp))
+                    Row {
+                        Button(
+                            onClick = { openDialog = false },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            elevation = null,
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color.Transparent,
+                                //不可以点击的颜色
+                                disabledBackgroundColor = Color.Gray
+                            )
+                        ) {
+                            Text(text = "取消", color = Color.Black, fontSize = 18.sp)
+                        }
+                        Spacer(modifier = Modifier.width(30.dp))
+                        Button(
+                            onClick = {
+                                var isOk = true
+                                cmdList.value.forEach {
+                                    if (it.name == text) {
+                                        ToastUtil.toast(context, "名字重复")
+                                        isOk = false
+                                    }
+                                }
+                                if (isOk) {
+                                    cmdList.value = cmdList.value.toMutableList().also {
+                                        it.add(Cmd(text, "", "hex"))
+                                    }
+                                    SaveDataToLocalFile.save(
+                                        context,
+                                        "CMDSend",
+                                        JSON.toJSONString(cmdList.value)
+                                    )
+                                    openDialog = false
+                                }
+
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            elevation = null,
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color(0xff1a75ff),
+                                //不可以点击的颜色
+                                disabledBackgroundColor = Color.Gray
+                            )
+                        ) {
+
+                            Text(text = "确定", color = Color.White, fontSize = 18.sp)
+                        }
+                    }
+                }
+            }
+        }
+
+    Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -311,16 +465,13 @@ fun MoreRecScreen() {
                 Text(text = "Tip:右滑可删除", fontSize = 9.sp)
             }
             IconButton(onClick = {
-                val data = CMDSend()
-                cmdList.value = cmdList.value.toMutableList().also {
-                    data.name = UUID.randomUUID().toString()
-                    it.add(data)
-                }
-                thread {
-                    cmdSendDao.insert(data)
-                }
+                openDialog = true
+
             }) {
-                Icon(painter = painterResource(id = R.drawable.baseline_playlist_add_black_24dp), contentDescription = null)
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_playlist_add_black_24dp),
+                    contentDescription = null
+                )
             }
         }
         Divider(
@@ -329,8 +480,10 @@ fun MoreRecScreen() {
                 .padding(start = 30.dp, end = 30.dp)
         )
 
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            items(cmdList.value, key = { item: CMDSend -> item.name }) { item ->
+        LazyColumn(modifier = Modifier.fillMaxWidth(), rememberLazyListState()) {
+            items(cmdList.value, key = { item: Cmd ->
+                item.name
+            }) { item ->
                 // 侧滑删除所需State
                 val dismissState = rememberDismissState()
                 // 按指定方向触发删除后的回调，在此处变更具体数据
@@ -338,91 +491,34 @@ fun MoreRecScreen() {
                     cmdList.value = cmdList.value.toMutableList().also {
                         it.remove(item)
                     }
-                    thread {
-                        cmdSendDao.delete(item)
-                    }
+                    SaveDataToLocalFile.save(context, "CMDSend", JSON.toJSONString(cmdList.value))
                 }
-                if (cmdList.value.size > 1) {
-                    SwipeToDismiss(
-                        state = dismissState,
-                        // animateItemPlacement() 此修饰符便添加了动画
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItemPlacement(),
-                        // 下面这个参数为触发滑动删除的移动阈值
-                        dismissThresholds = { direction ->
-                            FractionalThreshold(if (direction == DismissDirection.StartToEnd) 0.25f else 0.5f)
-                        },
-                        // 允许滑动删除的方向
-                        directions = setOf(DismissDirection.StartToEnd),
-                        // "背景 "，即原来显示的内容被划走一部分时显示什么
-                        background = {
-                            /*保证观看体验，省略此处内容*/
-                        }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(start = 30.dp, end = 30.dp, top = 10.dp, bottom = 5.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Button(
-                                onClick = { model.sendTypeFlow.value = if (model.sendTypeFlow.value == HEX_DATA) STRING_DATA else HEX_DATA },
-                                modifier = Modifier
-                                    .width(80.dp)
-                                    .height(40.dp),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = Color(0xA05e71f6),
-                                    contentColor = Color.Black
-                                ),
-                                elevation = null
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = if (sendType.value == STRING_DATA) R.drawable.s else R.drawable.h),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Color.Black
-                                )
-                            }
-                            TextField(
-                                // 指定下划线颜色
-                                colors = TextFieldDefaults.textFieldColors(
-                                    focusedIndicatorColor = Color.Transparent, // 有焦点时的颜色，透明
-                                    unfocusedIndicatorColor = Color.Transparent, // 无焦点时的颜色，绿色
-                                    errorIndicatorColor = Color.Red, // 错误时的颜色，红色
-                                    disabledIndicatorColor = Color.Gray // 不可用时的颜色，灰色
-                                ),
-                                isError = false,
-                                modifier = Modifier
-                                    .padding(start = 20.dp)
-                                    .fillMaxWidth()
-                                    .height(50.dp),
-                                shape = roundedCorner10dp,
-                                value = item.text ?: "", // 显示文本
-                                onValueChange = {
-                                    item.text = it
-                                }, // 文字改变时，就赋值给text
-                                label = { Text(text = item.name) }, // label是Input
-                                trailingIcon = @Composable {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.send), // 搜索图标
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .size(25.dp)
-                                            .clickable { model.sendStringFlow.value += item.text }) // 给图标添加点击事件，点击就吐司提示内容
-                                },
-                                leadingIcon = @Composable {
-                                    Image(imageVector = Icons.Filled.Clear, // 清除图标
-                                        contentDescription = null,
-                                        modifier = Modifier.clickable { item.text = "" }) // 给图标添加点击事件，点击就清空text
-                                },
-                                // placeholder = @Composable { Text(text = "This is placeholder") }, // 不输入内容时的占位符
-                            )
-                        }
+                SwipeToDismiss(
+                    state = dismissState,
+                    // animateItemPlacement() 此修饰符便添加了动画
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItemPlacement(),
+                    // 下面这个参数为触发滑动删除的移动阈值
+                    dismissThresholds = { direction ->
+                        FractionalThreshold(if (direction == DismissDirection.StartToEnd) 0.25f else 0.5f)
+                    },
+                    // 允许滑动删除的方向
+                    directions = setOf(DismissDirection.StartToEnd),
+                    // "背景 "，即原来显示的内容被划走一部分时显示什么
+                    background = {
+                        /*保证观看体验，省略此处内容*/
                     }
-                }else{
+                ) {
+                    var name by remember {
+                        mutableStateOf(item.name)
+                    }
+                    var text by remember {
+                        mutableStateOf(item.text)
+                    }
+                    var type by remember {
+                        mutableStateOf(item.type)
+                    }
                     Row(
                         modifier = Modifier
                             .padding(start = 30.dp, end = 30.dp, top = 10.dp, bottom = 5.dp)
@@ -431,7 +527,20 @@ fun MoreRecScreen() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
-                            onClick = { model.sendTypeFlow.value = if (model.sendTypeFlow.value == HEX_DATA) STRING_DATA else HEX_DATA },
+                            onClick = {
+                                if (type == "hex") {
+                                    type = "str"
+                                    item.type = "str"
+                                } else {
+                                    type = "hex"
+                                    item.type = "hex"
+                                }
+                                SaveDataToLocalFile.save(
+                                    context,
+                                    "CMDSend",
+                                    JSON.toJSONString(cmdList.value)
+                                )
+                            },
                             modifier = Modifier
                                 .width(80.dp)
                                 .height(40.dp),
@@ -443,13 +552,15 @@ fun MoreRecScreen() {
                             elevation = null
                         ) {
                             Icon(
-                                painter = painterResource(id = if (sendType.value == STRING_DATA) R.drawable.s else R.drawable.h),
+                                painter = painterResource(id = if (type == "hex") R.drawable.h else R.drawable.s),
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
                                 tint = Color.Black
                             )
                         }
                         TextField(
+                            textStyle = TextStyle(fontSize = 11.sp)
+                            ,
                             // 指定下划线颜色
                             colors = TextFieldDefaults.textFieldColors(
                                 focusedIndicatorColor = Color.Transparent, // 有焦点时的颜色，透明
@@ -463,247 +574,44 @@ fun MoreRecScreen() {
                                 .fillMaxWidth()
                                 .height(50.dp),
                             shape = roundedCorner10dp,
-                            value = item.text ?: "", // 显示文本
+                            value = text, // 显示文本
                             onValueChange = {
+                                text = it
                                 item.text = it
+                                SaveDataToLocalFile.save(
+                                    context,
+                                    "CMDSend",
+                                    JSON.toJSONString(cmdList.value)
+                                )
                             }, // 文字改变时，就赋值给text
-                            label = { Text(text = item.name) }, // label是Input
+                            label = { Text(text = name) }, // label是Input
                             trailingIcon = @Composable {
                                 Image(
                                     painter = painterResource(id = R.drawable.send), // 搜索图标
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(25.dp)
-                                        .clickable { model.sendStringFlow.value += item.text }) // 给图标添加点击事件，点击就吐司提示内容
+                                        .clickable { /*model.sendStringFlow.value += item.text*/ }) // 给图标添加点击事件，点击就吐司提示内容
                             },
                             leadingIcon = @Composable {
                                 Image(imageVector = Icons.Filled.Clear, // 清除图标
                                     contentDescription = null,
-                                    modifier = Modifier.clickable { item.text = "" }) // 给图标添加点击事件，点击就清空text
+                                    modifier = Modifier.clickable {
+                                        text = ""
+                                        item.text = ""
+                                        SaveDataToLocalFile.save(
+                                            context,
+                                            "CMDSend",
+                                            JSON.toJSONString(cmdList.value)
+                                        )
+                                    }) // 给图标添加点击事件，点击就清空text
                             },
                             // placeholder = @Composable { Text(text = "This is placeholder") }, // 不输入内容时的占位符
                         )
                     }
                 }
             }
-        }
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1F)
-                .padding(start = 30.dp, end = 30.dp, top = 10.dp)
-                .border(2.dp, color = Color.Blue, shape = roundedCorner10dp), shape = roundedCorner10dp
-        )
-        {
-            Column(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
-                Text(text = "Receive", modifier = Modifier.padding(10.dp), fontSize = 12.sp)
-                Divider(modifier = Modifier.fillMaxWidth())
-                (if (recType.value == STRING_DATA) String(rec.value, StandardCharsets.UTF_8) else bytesToHexString(rec.value))?.let {
-                    Text(
-                        text = it, modifier = Modifier
-                            .padding(top = 10.dp)
-                            .verticalScroll(rememberScrollState())
-                    )
-                }
-            }
-        }
-        Row(
-            modifier = Modifier
-                .padding(start = 30.dp, end = 30.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(
-                onClick = { model.recTypeFlow.value = if (model.recTypeFlow.value == HEX_DATA) STRING_DATA else HEX_DATA }, modifier = Modifier
-                    .padding(start = 40.dp, top = 10.dp, bottom = 10.dp, end = 40.dp)
-                    .width(80.dp)
-                    .height(40.dp), shape = RoundedCornerShape(20.dp), colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xA05e71f6),
-                    contentColor = Color.Black
-                ),
-                elevation = null
-            ) {
-                Icon(
-                    painter = painterResource(id = if (recType.value == STRING_DATA) R.drawable.s else R.drawable.h),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.Black
-                )
-            }
-            Button(
-                onClick = { model.recDataFlow.value = byteArrayOf() }, modifier = Modifier
-                    .padding(start = 40.dp, top = 10.dp, bottom = 10.dp, end = 40.dp)
-                    .width(80.dp)
-                    .height(40.dp), shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xa0fc5531),
-                    contentColor = Color.Black
-                ),
-                elevation = null
-            ) {
-                Image(painter = painterResource(id = R.drawable.round_delete_forever_black_48dp), contentDescription = null)
-            }
-        }
 
-    }
-    thread {
-        val data = cmdSendDao.getAllCMDSend().toMutableList()
-        if (data.isEmpty()) {
-            repeat(3) { time ->
-                data.toMutableList().also {
-                    val i = CMDSend()
-                    i.name = "CMD$time"
-                    it.add(i)
-                    cmdSendDao.insert(i)
-                }
-            }
-        }
-        cmdList.value = data
-    }
-}
-
-@Composable
-fun AdvanceRecScreen() {
-    val model: MainViewModel = viewModel()
-    val rec = model.recDataFlow.collectAsState()
-    val send = model.sendStringFlow.collectAsState()
-    val recType = model.recTypeFlow.collectAsState()
-    val sendType = model.sendTypeFlow.collectAsState()
-    // 定义一个可观测的text，用来在TextField中展示
-    var text by remember {
-        mutableStateOf("")
-    }
-    Column {
-        Row(
-            modifier = Modifier
-                .padding(start = 30.dp, end = 30.dp, top = 10.dp, bottom = 10.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(
-                onClick = { model.sendTypeFlow.value = if (model.sendTypeFlow.value == HEX_DATA) STRING_DATA else HEX_DATA }, modifier = Modifier
-                    .width(80.dp)
-                    .height(40.dp), shape = RoundedCornerShape(20.dp), colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xA05e71f6),
-                    contentColor = Color.Black
-                ),
-                elevation = null
-            ) {
-                Icon(
-                    painter = painterResource(id = if (sendType.value == STRING_DATA) R.drawable.s else R.drawable.h),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.Black
-                )
-            }
-            TextField(
-                // 指定下划线颜色
-                colors = TextFieldDefaults.textFieldColors(
-                    focusedIndicatorColor = Color.Transparent, // 有焦点时的颜色，透明
-                    unfocusedIndicatorColor = Color.Transparent, // 无焦点时的颜色，绿色
-                    errorIndicatorColor = Color.Red, // 错误时的颜色，红色
-                    disabledIndicatorColor = Color.Gray // 不可用时的颜色，灰色
-                ),
-                isError = false,
-                modifier = Modifier
-                    .padding(start = 20.dp)
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = roundedCorner10dp,
-                value = text, // 显示文本
-                onValueChange = { text = it }, // 文字改变时，就赋值给text
-                label = { Text(text = "Input") }, // label是Input
-                trailingIcon = @Composable {
-                    Image(
-                        painter = painterResource(id = R.drawable.send), // 搜索图标
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(25.dp)
-                            .clickable { model.sendStringFlow.value += text }) // 给图标添加点击事件，点击就吐司提示内容
-                },
-                leadingIcon = @Composable {
-                    Image(imageVector = Icons.Filled.Clear, // 清除图标
-                        contentDescription = null,
-                        modifier = Modifier.clickable { text = "" }) // 给图标添加点击事件，点击就清空text
-                },
-                // placeholder = @Composable { Text(text = "This is placeholder") }, // 不输入内容时的占位符
-            )
-        }
-
-
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1F)
-                .padding(start = 10.dp, end = 10.dp, top = 10.dp)
-                .border(2.dp, color = Color.Blue, shape = roundedCorner10dp), shape = roundedCorner10dp
-        )
-        {
-            Column(modifier = Modifier.padding(start = 2.dp, end = 2.dp)) {
-                Text(text = "Receive", modifier = Modifier.padding(10.dp), fontSize = 12.sp)
-                Divider(modifier = Modifier.fillMaxWidth())
-                Row(modifier = Modifier.padding(start = 10.dp, top = 5.dp, bottom = 5.dp, end = 10.dp)) {
-                    Text(text = "帧头", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "#data1", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "#data2", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "#data3", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "#data4", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "#data5", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "#data6", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "#data7", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "#data8", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "帧尾", fontSize = 9.sp, modifier = Modifier.padding(end = 5.dp))
-                    Text(text = "acc", fontSize = 9.sp)
-                }
-                (if (recType.value == STRING_DATA) String(rec.value, StandardCharsets.UTF_8) else bytesToHexString(rec.value))?.let {
-                    Text(
-                        text = it, modifier = Modifier
-                            .padding(top = 10.dp)
-                            .verticalScroll(rememberScrollState())
-                    )
-                }
-            }
-        }
-        Row(
-            modifier = Modifier
-                .padding(start = 30.dp, end = 30.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(
-                onClick = { model.recTypeFlow.value = if (model.recTypeFlow.value == HEX_DATA) STRING_DATA else HEX_DATA }, modifier = Modifier
-                    .padding(start = 40.dp, top = 10.dp, bottom = 10.dp, end = 40.dp)
-                    .width(80.dp)
-                    .height(40.dp), shape = RoundedCornerShape(20.dp), colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xA05e71f6),
-                    contentColor = Color.Black
-                ),
-                elevation = null
-            ) {
-                Icon(
-                    painter = painterResource(id = if (recType.value == STRING_DATA) R.drawable.s else R.drawable.h),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.Black
-                )
-            }
-            Button(
-                onClick = { model.recDataFlow.value = byteArrayOf() }, modifier = Modifier
-                    .padding(start = 40.dp, top = 10.dp, bottom = 10.dp, end = 40.dp)
-                    .width(80.dp)
-                    .height(40.dp), shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xa0fc5531),
-                    contentColor = Color.Black
-                ),
-                elevation = null
-            ) {
-                Image(painter = painterResource(id = R.drawable.round_delete_forever_black_48dp), contentDescription = null)
-            }
         }
     }
-
 }

@@ -6,10 +6,12 @@ import android.view.View
 import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowInsetsCompat
+import com.example.btremote.app.App
 import com.example.btremote.compose.waveDisplay.WaveDisplayCompose
 import com.example.btremote.ui.theme.BTRemoteTheme
 import com.google.accompanist.insets.ProvideWindowInsets
@@ -44,5 +46,11 @@ class WaveDisplayActivity : ComponentActivity() {
                     or View.SYSTEM_UI_FLAG_FULLSCREEN
                     or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.R)
+    override fun onResume() {
+        super.onResume()
+        App.wifiService.getNetStatus()
     }
 }

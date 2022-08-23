@@ -1,12 +1,11 @@
-package com.example.btremote.database.viewpos
+package com.example.btremote.database.protocol
 
-import androidx.compose.ui.geometry.Offset
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-class ViewPosAndGesture {
+class Protocol {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     var id: Int = 0

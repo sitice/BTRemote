@@ -1,7 +1,6 @@
 package com.example.btremote.database.cmd
 
 import androidx.room.*
-import com.example.btremote.database.viewpos.ViewPosAndGesture
 
 @Dao
 interface CMDSendDao {

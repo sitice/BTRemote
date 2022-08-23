@@ -31,7 +31,8 @@ fun BottomTab(
         modifier = Modifier
             .background(MaterialTheme.colors.background)
             .padding(8.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .height(35.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically,
 
@@ -55,16 +56,17 @@ fun BottomTabItem(item: Screen, isSelected: Boolean, onClick: () -> Unit) {
             .clip(CircleShape)
             .background(background, shape = RoundedCornerShape(25.dp))
             .clickable(onClick = onClick)
-            .width(100.dp)
-            .height(50.dp),
+            .width(70.dp)
+            .height(40.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center
     ) {
         Icon(
+            modifier = Modifier.size(20.dp),
             imageVector = item.icon, contentDescription = null,
             tint = contentColor
         )
         AnimatedVisibility(visible = isSelected) {
-            Text(text = item.title, color = contentColor, fontSize = 11.sp)
+            Text(text = item.title, color = contentColor, fontSize = 10.sp)
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.btremote.compose
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asFlow
@@ -31,13 +33,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 fun openNewScreen(id: String, navController: NavHostController, scope: CoroutineScope, scaffoldState: ScaffoldState) {
-    navController.navigate(id) {
-        popUpTo(navController.graph.findStartDestination().id) {
-            saveState = true
-        }
-        launchSingleTop = true
-        restoreState = true
-    }
+    navController.navigate(id)
     scope.launch {
         scaffoldState.drawerState.apply {
             if (isClosed) open() else close()
@@ -51,7 +47,7 @@ fun DividerContentCompose(
     scope: CoroutineScope,
     scaffoldState: ScaffoldState,
     screen: MutableState<Screen>,
-    activity: Activity
+    context: Context = LocalContext.current
 ) {
     val model: MainViewModel = viewModel()
     val screenState = model.nowScreenLiveData.asFlow().collectAsState(initial = Screens.mainScreen)
@@ -92,9 +88,8 @@ fun DividerContentCompose(
             .padding(start = 16.dp, end = 16.dp)
             .background(color = if (screenState.value == Screens.mainScreen) LightBlue else Color.White, shape = RoundedCornerShape(5.dp))
             .clickable {
-
                 openNewScreen(Screens.mainScreen, navController, scope, scaffoldState)
-
+                screen.value = Screen.HomeScreen
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -141,7 +136,7 @@ fun DividerContentCompose(
             .padding(start = 16.dp, end = 16.dp)
             .background(color = if (screenState.value == Screens.remoteScreen) LightBlue else Color.White, shape = RoundedCornerShape(5.dp))
             .clickable {
-                activity.startActivity(Intent(activity, RemoteActivity::class.java))
+                context.startActivity(Intent(context, RemoteActivity::class.java))
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -165,7 +160,7 @@ fun DividerContentCompose(
             .padding(start = 16.dp, end = 16.dp)
             .background(color = if (screenState.value == Screens.waveDisplayScreen) LightBlue else Color.White, shape = RoundedCornerShape(5.dp))
             .clickable {
-                activity.startActivity(Intent(activity, WaveDisplayActivity::class.java))
+                context.startActivity(Intent(context, WaveDisplayActivity::class.java))
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -202,6 +197,29 @@ fun DividerContentCompose(
         )
         Spacer(modifier = Modifier.width(30.dp))
         Text(text = "设置", color = if (screenState.value == Screens.settingScreen) Blue else Color.Black)
+    }
+
+    Spacer(modifier = Modifier.height(10.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .padding(start = 16.dp, end = 16.dp)
+            .background(color = if (screenState.value == Screens.protocolScreen) LightBlue else Color.White, shape = RoundedCornerShape(5.dp))
+            .clickable {
+                openNewScreen(Screens.protocolScreen, navController, scope, scaffoldState)
+            },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            modifier = Modifier
+                .size(30.dp)
+                .padding(start = 10.dp),
+            painter = painterResource(R.drawable.baseline_list_alt_black_24dp),
+            contentDescription = null, tint = if (screenState.value == Screens.protocolScreen) Blue else Color.Black
+        )
+        Spacer(modifier = Modifier.width(30.dp))
+        Text(text = "通信协议", color = if (screenState.value == Screens.protocolScreen) Blue else Color.Black)
     }
 
 

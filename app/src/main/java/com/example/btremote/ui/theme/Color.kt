@@ -22,3 +22,27 @@ val gradient2 =
 
 val gradient3 =
     Brush.linearGradient(listOf(Color(0xff29323c), Color(0xff485563)))
+
+val gradient4 =
+    Brush.linearGradient(listOf(Color(0xff5f72bd), Color(0xff9b23ea)))
+
+val gradient5 =
+    Brush.linearGradient(listOf(Color(0xff0093E9), Color(0xff80D0C7)))
+
+val gradient6 =
+    Brush.linearGradient(listOf(Color(0xff8EC5FC), Color(0xffE0C3FC)))
+
+val gradient7 =
+    Brush.linearGradient(listOf(Color(0xff8BC6EC), Color(0xff9599E2)))
+
+val gradient8 =
+    Brush.linearGradient(
+        listOf(
+            Color(0xff845EC2),
+            Color(0xffD65DB1),
+            Color(0xffFF6F91),
+            Color(0xffFF9671),
+            Color(0xffFFC75F),
+            Color(0xffF9F871)
+        )
+    )

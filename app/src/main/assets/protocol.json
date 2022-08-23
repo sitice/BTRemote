@@ -1,0 +1,52 @@
+[
+  {
+    "name": "1",
+    "mAddress": 1,
+    "targetAddress": 2,
+    "frameType": 1,
+    "ctrlType": 2,
+    "dataList": [
+      {
+        "dataName": "1",
+        "dataType": "u8"
+      },
+      {
+        "dataName": "1",
+        "dataType": "u8"
+      },
+      {
+        "dataName": "1",
+        "dataType": "u8"
+      },
+      {
+        "dataName": "1",
+        "dataType": "u8"
+      }
+    ]
+  },
+  {
+    "name": "1",
+    "mAddress": 2,
+    "targetAddress": 2,
+    "frameType": 2,
+    "ctrlType": 2,
+    "dataList": [
+      {
+        "dataName": "1",
+        "dataType": "u8"
+      },
+      {
+        "dataName": "1",
+        "dataType": "u8"
+      },
+      {
+        "dataName": "1",
+        "dataType": "u8"
+      },
+      {
+        "dataName": "1",
+        "dataType": "u8"
+      }
+    ]
+  }
+]

@@ -2,19 +2,26 @@ package com.example.btremote.compose
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import kotlin.math.absoluteValue
 import com.example.btremote.R
@@ -40,38 +47,73 @@ fun Banner(modifier: Modifier = Modifier) {
     ) {
         Card(
             modifier = Modifier.padding(start = 30.dp, end = 30.dp, top = 20.dp, bottom = 10.dp)
-               /* .graphicsLayer {
-                    val pageOffset = calculateCurrentOffsetForPage(it).absoluteValue
+            /* .graphicsLayer {
+                 val pageOffset = calculateCurrentOffsetForPage(it).absoluteValue
 
-                    // We animate the scaleX + scaleY, between 85% and 100%
-                    lerp(
-                        start = 0.9f,
-                        stop = 1f,
-                        fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                    ).also { scale ->
-                        scaleX = scale
-                        scaleY = scale
-                    }
-                    // We animate the alpha, between 50% and 100%
-                    alpha = lerp(
-                        start = 0.5f,
-                        stop = 1f,
-                        fraction = 1f - pageOffset.coerceIn(0f, 1f),
-                    )
-                }
-                .aspectRatio(1.6f, true),*/,
+                 // We animate the scaleX + scaleY, between 85% and 100%
+                 lerp(
+                     start = 0.9f,
+                     stop = 1f,
+                     fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                 ).also { scale ->
+                     scaleX = scale
+                     scaleY = scale
+                 }
+                 // We animate the alpha, between 50% and 100%
+                 alpha = lerp(
+                     start = 0.5f,
+                     stop = 1f,
+                     fraction = 1f - pageOffset.coerceIn(0f, 1f),
+                 )
+             }
+             .aspectRatio(1.6f, true),*/,
             shape = roundedCorner10dp
         ) {
             Box {
                 Image(
                     painter = when (currentPage) {
-                        0 -> painterResource(id = R.drawable.screenshot_20220610_172647)
-                        else -> painterResource(id = R.drawable.screenshot_20220610_223252)
+                        0 -> painterResource(id = R.drawable.zed_zeppelin2)
+                        1 -> painterResource(id = R.drawable.pink_floyd1)
+                        2 -> painterResource(id = R.drawable.the_beatles1)
+                        3 -> painterResource(id = R.drawable.wanqin1)
+                        else -> painterResource(id = R.drawable.wanqin1)
                     },
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillHeight
+                    contentScale = ContentScale.FillWidth
                 )
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(10.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = Color.White
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(start = 5.dp, end = 5.dp),
+                            text = when (currentPage) {
+                                0 -> "Zed Zeppelin"
+                                1 -> "Pink Floyd"
+                                2 -> "The Beatles"
+                                3 -> "万能青年旅店"
+                                else -> "万能青年旅店"
+                            },
+                            color = Color.Black,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight(500)
+                        )
+                    }
+                    Spacer(modifier = modifier.width(5.dp))
+//                    Text(
+//                        text = "史上最伟大的摇滚乐队",
+//                        color = Color.White,
+//                        fontSize = 12.sp
+//                    )
+                }
+
+
             }
         }
 
@@ -81,15 +123,15 @@ fun Banner(modifier: Modifier = Modifier) {
         HorizontalPagerIndicator(
             pagerState = pagerState,
             modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-               ,
+                .align(Alignment.CenterHorizontally),
         )
 
     }
     LaunchedEffect(pagerState) {
         while (true) {
             delay(5000)
-            val page = if (pagerState.currentPage >= pagerState.pageCount - 1) 0 else pagerState.currentPage + 1
+            val page =
+                if (pagerState.currentPage >= pagerState.pageCount - 1) 0 else pagerState.currentPage + 1
             pagerState.animateScrollToPage(page)
         }
 

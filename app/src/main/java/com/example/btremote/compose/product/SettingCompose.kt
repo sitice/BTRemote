@@ -24,12 +24,12 @@ fun Setting() {
                 verticalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Setting", fontSize = 25.sp)
-            Box(modifier = Modifier.width(50.dp)) {
+            Text(text = "设置", fontSize = 25.sp)
+            Box(contentAlignment = Alignment.TopCenter) {
                 IconButton(onClick = { /*TODO*/ }) {
                     Icon(painter = painterResource(id = R.drawable.reset), contentDescription = null, modifier = Modifier.size(25.dp))
                 }
-                Text(text = "reset", modifier = Modifier.padding(start = 9.dp, top = 30.dp))
+                Text(text = "恢复", fontSize = 9.sp, modifier = Modifier.offset(y = 35.dp))
             }
         }
         Row {
@@ -47,7 +47,7 @@ fun Setting() {
                 )
             ) {
 
-                Text(text = "Save", color = Color.White, fontSize = 18.sp)
+                Text(text = "保存", color = Color.White, fontSize = 18.sp)
             }
             Spacer(modifier = Modifier.width(30.dp))
 
@@ -64,7 +64,7 @@ fun Setting() {
                     disabledBackgroundColor = Color.Gray
                 )
             ) {
-                Text(text = "Cancel", color = Color.White, fontSize = 18.sp)
+                Text(text = "取消", color = Color.White, fontSize = 18.sp)
             }
         }
     }

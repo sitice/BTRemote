@@ -1,6 +1,7 @@
 package com.example.btremote.protocol
 
 import java.util.*
+import kotlin.experimental.and
 
 // char转换为byte[2]数组
 fun getByteArray(c: Char): ByteArray {
@@ -315,6 +316,47 @@ fun strToHex(s: String): String {
     return str
 }
 
+/**
+ * Convert byte[] to hex string.这里我们可以将byte转换成int，然后利用Integer.toHexString(int)来转换成16进制字符串。
+ * @param src byte[] data
+ * @return hex string
+ */
+fun bytesToHexString(src: ByteArray?): String? {
+    val stringBuilder = StringBuilder("")
+    if (src == null || src.isEmpty()) {
+        return null
+    }
+    for (i in src.indices) {
+        val v: Byte = src[i] and 0xFF.toByte()
+        val hv = Integer.toHexString(v.toInt())
+        if (hv.length < 2) {
+            stringBuilder.append(0)
+        }
+        stringBuilder.append(hv)
+    }
+    return stringBuilder.toString()
+}
+
+fun string2Byte(s: String): ByteArray {
+    val result = ByteArray(s.length / 2)
+    var j = 0
+    for (i in 0 until (s.length + 1) / 2) {
+        result[i] = char2Byte(s[j++])
+        result[i] = (char2Byte(s[j++]) + (result[i].toInt() shl 4)).toByte()
+    }
+    return result
+}
+
+fun char2Byte(c: Char): Byte {
+    if (c in 'a'..'f') {
+        return (c - 'a' + 10).toByte()
+    } else if (c in 'A'..'F') {
+        return (c - 'A' + 10).toByte()
+    } else if (c in '0'..'9') {
+        return (c - '0').toByte()
+    }
+    return (-1).toByte()
+}
 /**
  * 字符串转化成为ByteArray
  * @param s 字符串

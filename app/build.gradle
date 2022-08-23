@@ -4,12 +4,14 @@ plugins {
 }
 
 
+
+
 android {
     compileSdk 32
 
     defaultConfig {
         applicationId "com.example.btremote"
-        minSdk 21
+        minSdk 26
         targetSdk 32
         versionCode 1
         versionName "1.0"
@@ -17,6 +19,11 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
+        }
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation" : "$projectDir/schemas".toString()]
+            }
         }
     }
 
@@ -48,11 +55,11 @@ android {
 }
 
 apply plugin: 'kotlin-kapt'
-apply plugin: 'dagger.hilt.android.plugin'
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'com.google.android.material:material:1.4.0'
+    implementation files('libs/CH34xUARTDrive_no_toast.jar')
     def accompanist_version = "0.15.0"
     def lifecycle_version = "2.4.1"
     implementation 'androidx.core:core-ktx:1.7.0'
@@ -74,9 +81,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0-rc01'
     implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
-    kapt 'androidx.hilt:hilt-compiler:1.0.0'
-    kapt 'com.google.dagger:hilt-android-compiler:2.39.1'
-    api('com.google.dagger:hilt-android:2.39.1')
+
     implementation "com.airbnb.android:lottie-compose:4.2.0"
     def nav_version = "2.4.2"
 
@@ -98,8 +103,10 @@ dependencies {
 
     implementation("androidx.datastore:datastore-preferences-core:1.0.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.21"
 
-
+    implementation 'com.alibaba:fastjson:1.1.72.android'
+  //  implementation("io.github.thanosfisherman.wifiutils:wifiutils:1.6.6")//wifi库
 //    implementation("io.coil-kt:coil:1.4.0")
 //    implementation("io.coil-kt:coil-compose:1.4.0")
 

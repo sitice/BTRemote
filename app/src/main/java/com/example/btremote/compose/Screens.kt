@@ -10,4 +10,6 @@ object Screens{
     const val moreScreen = "MoreScreen"
     const val waveDisplayScreen = "WaveDisplayScreen"
     const val debugScreen = "DebugScreen"
+    const val protocolScreen = "protocolScreen"
+    const val esp32camScreen = "esp32camScreen"
 }

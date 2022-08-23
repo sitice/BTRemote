@@ -15,9 +15,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.btremote.app.App
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.runBlocking
-import kotlin.experimental.and
+import java.io.*
 
 
 /**
@@ -52,6 +51,54 @@ internal object ToastUtil {
 }
 
 
+object SaveDataToLocalFile {
+    fun save(context: Context, file: String, data: String) {
+        var writer: BufferedWriter? = null
+        try {
+            val out = context.openFileOutput(file, Context.MODE_PRIVATE)
+            writer = BufferedWriter(OutputStreamWriter(out))
+            writer.write(data)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            try {
+                writer?.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun load(context: Context, file: String): String? {
+        var reader: BufferedReader? = null
+        val content = StringBuilder()
+        try {
+            val input: FileInputStream
+            try {
+                input = context.openFileInput(file)
+            } catch (e: FileNotFoundException) {
+                return null
+            }
+            reader = BufferedReader(InputStreamReader(input))
+            var line: String? = ""
+            while (reader.readLine().also { line = it } != null) {
+                content.append(line)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        return content.toString()
+    }
+}
+
 /**
  * 获取当前APK的版本号和版本名
  */
@@ -66,7 +113,8 @@ object APKVersionInfoUtils {
         var versionCode = 0
         try {
             //获取软件版本号，对应AndroidManifest.xml下android:versionCode
-            versionCode = mContext.packageManager.getPackageInfo(mContext.packageName, 0).versionCode
+            versionCode =
+                mContext.packageManager.getPackageInfo(mContext.packageName, 0).versionCode
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
         }
@@ -145,7 +193,7 @@ object WindowManager {
                 val decorView: View = window.decorView
                 decorView.systemUiVisibility = (
                         SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                )
+                        )
             } else {
                 val decorView: View = window.decorView
                 decorView.systemUiVisibility = (SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -158,48 +206,28 @@ object WindowManager {
         }
     }
 
-    /**
-     * Convert byte[] to hex string.这里我们可以将byte转换成int，然后利用Integer.toHexString(int)来转换成16进制字符串。
-     * @param src byte[] data
-     * @return hex string
-     */
-    fun bytesToHexString(src: ByteArray?): String? {
-        val stringBuilder = StringBuilder("")
-        if (src == null || src.isEmpty()) {
-            return null
-        }
-        for (i in src.indices) {
-            val v: Byte = src[i] and 0xFF.toByte()
-            val hv = Integer.toHexString(v.toInt())
-            if (hv.length < 2) {
-                stringBuilder.append(0)
-            }
-            stringBuilder.append(hv)
-        }
-        return stringBuilder.toString()
-    }
-
 }
-object EasyDataStore {
 
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ViewPos")
+
+object EasyDataStore {
+    val Context.dataStore1: DataStore<Preferences> by preferencesDataStore(name = "ViewPos")
 
     // DataStore变量
-    private val dataStore = App.appContext.dataStore
+    var dataStore = App.appContext.dataStore1
 
     /**
      * 存数据
      */
     suspend fun <T> putAsyncData(key: String, value: T) {
-            when (value) {
-                is Int -> putIntData(key, value)
-                is Long -> putLongData(key, value)
-                is String -> putStringData(key, value)
-                is Boolean -> putBooleanData(key, value)
-                is Float -> putFloatData(key, value)
-                is Double -> putDoubleData(key, value)
-                else -> throw IllegalArgumentException("This type cannot be saved to the Data Store")
-            }
+        when (value) {
+            is Int -> putIntData(key, value)
+            is Long -> putLongData(key, value)
+            is String -> putStringData(key, value)
+            is Boolean -> putBooleanData(key, value)
+            is Float -> putFloatData(key, value)
+            is Double -> putDoubleData(key, value)
+            else -> throw IllegalArgumentException("This type cannot be saved to the Data Store")
+        }
 
     }
 
@@ -223,7 +251,7 @@ object EasyDataStore {
     /**
      * 取数据
      */
-     fun <T> getSyncData(key: String, defaultValue: T): T {
+    fun <T> getSyncData(key: String, defaultValue: T): T {
         var data: T? = null
         runBlocking {
             data = when (defaultValue) {
@@ -236,22 +264,22 @@ object EasyDataStore {
                 else -> throw IllegalArgumentException("This type cannot be saved to the Data Store")
             }
         }
-        return data?: defaultValue
+        return data ?: defaultValue
     }
 
     /**
      * 取数据
      */
     suspend fun <T> getAsyncData(key: String, defaultValue: T): T {
-            val data = when (defaultValue) {
-                is Int -> getIntData(key, defaultValue)
-                is Long -> getLongData(key, defaultValue)
-                is String -> getStringData(key, defaultValue)
-                is Boolean -> getBooleanData(key, defaultValue)
-                is Float -> getFloatData(key, defaultValue)
-                is Double -> getDoubleData(key, defaultValue)
-                else -> throw IllegalArgumentException("This type cannot be saved to the Data Store")
-            }
+        val data = when (defaultValue) {
+            is Int -> getIntData(key, defaultValue)
+            is Long -> getLongData(key, defaultValue)
+            is String -> getStringData(key, defaultValue)
+            is Boolean -> getBooleanData(key, defaultValue)
+            is Float -> getFloatData(key, defaultValue)
+            is Double -> getDoubleData(key, defaultValue)
+            else -> throw IllegalArgumentException("This type cannot be saved to the Data Store")
+        }
         return data as T
     }
 
@@ -301,35 +329,38 @@ object EasyDataStore {
      * 取出Int数据
      */
     private suspend fun getIntData(key: String, default: Int = 0): Int = dataStore.data.map {
-            it[intPreferencesKey(key)] ?: default
-        }.first()
+        it[intPreferencesKey(key)] ?: default
+    }.first()
 
     /**
      * 取出Long数据
      */
     private suspend fun getLongData(key: String, default: Long = 0): Long = dataStore.data.map {
-            it[longPreferencesKey(key)] ?: default
-        }.first()
+        it[longPreferencesKey(key)] ?: default
+    }.first()
 
 
     /**
      * 取出String数据
      */
-    private suspend fun getStringData(key: String, default: String? = null): String =  dataStore.data.map {
+    private suspend fun getStringData(key: String, default: String? = null): String =
+        dataStore.data.map {
             it[stringPreferencesKey(key)] ?: default
         }.first()!!
 
     /**
      * 取出Boolean数据
      */
-    private suspend fun getBooleanData(key: String, default: Boolean = false): Boolean = dataStore.data.map {
+    private suspend fun getBooleanData(key: String, default: Boolean = false): Boolean =
+        dataStore.data.map {
             it[booleanPreferencesKey(key)] ?: default
         }.first()
 
     /**
      * 取出Float数据
      */
-    private suspend fun getFloatData(key: String, default: Float = 0.0f): Float =  dataStore.data.map {
+    private suspend fun getFloatData(key: String, default: Float = 0.0f): Float =
+        dataStore.data.map {
             it[floatPreferencesKey(key)] ?: default
         }.first()
 
