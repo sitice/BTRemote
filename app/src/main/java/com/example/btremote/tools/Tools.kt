@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import java.io.*
+import java.nio.charset.Charset
 
 
 /**
@@ -26,7 +27,7 @@ import java.io.*
  * @Version 3.0.0
  */
 internal object LogUtil {
-    var status = true
+    var status = false
 
     fun log(title: String, content: String = "") {
         if (status) {
@@ -214,6 +215,17 @@ object EasyDataStore {
 
     // DataStore变量
     var dataStore = App.appContext.dataStore1
+    fun readSendRecType(context: Context) {
+        dataStore = context.dataStore1
+        App.baseSendType.value = getSyncData("baseSendType", "Bluetooth")
+        App.baseRecType.value = getSyncData("baseRecType", "Bluetooth")
+        App.advanceSendType.value = getSyncData("advanceSendType", "Bluetooth")
+        App.advanceRecType.value = getSyncData("advanceRecType", "Bluetooth")
+        App.remoteSendType.value = getSyncData("remoteSendType", "Bluetooth")
+        App.remoteRecType.value = getSyncData("remoteRecType", "Bluetooth")
+        App.waveSendType.value = getSyncData("waveSendType", "Bluetooth")
+        App.waveRecType.value = getSyncData("waveRecType", "Bluetooth")
+    }
 
     /**
      * 存数据
@@ -374,3 +386,16 @@ object EasyDataStore {
 
 }
 
+fun readAssetsFile(context: Context, fileName: String?): String? {
+    try {
+        val `is` = context.assets.open(fileName!!)
+        val fileLength = `is`.available()
+        val buffer = ByteArray(fileLength)
+        val readLength = `is`.read(buffer)
+        `is`.close()
+        return String(buffer, Charset.forName("utf-8"))
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+    return null
+}

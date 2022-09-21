@@ -14,20 +14,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.btremote.MainActivity
-import com.example.btremote.app.App
-import com.example.btremote.database.cmd.CMDSend
-import com.example.btremote.tools.EasyDataStore
-import com.example.btremote.tools.LogUtil
 import com.example.btremote.tools.ToastUtil
-import com.example.btremote.viewmodel.HEX_DATA
 import com.example.btremote.viewmodel.MainViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import java.io.IOException
-import kotlin.concurrent.thread
 
 const val REQUEST_ENABLE_BT = 1
 
@@ -44,12 +32,6 @@ class MainLifecycle(
     override fun onCreate(owner: LifecycleOwner) {
         super.onCreate(owner)
 
-        viewModel.requestLauncher =
-            activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    //App.bluetoothStateFlow.value = true
-                }
-            }
         requestMultiplePermissions =
             activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { it ->
                 it.entries.forEach {
@@ -175,4 +157,8 @@ class MainLifecycle(
 
     }
 
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        super.onDestroy(owner)
+    }
 }

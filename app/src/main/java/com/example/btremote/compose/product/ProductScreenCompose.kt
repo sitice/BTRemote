@@ -213,7 +213,7 @@ fun ProductScreen(navController: NavController,context: Context = LocalContext.c
             }
             Button(
                 onClick = {
-                    navController.navigate(Screens.settingScreen)
+                    navController.navigate(Screens.productSettingScreen)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

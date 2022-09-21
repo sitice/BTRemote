@@ -1,14 +1,12 @@
 package com.example.btremote.compose.dfprotocol
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,30 +17,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.alibaba.fastjson.JSON
 import com.example.btremote.R
-import com.example.btremote.protocol.Protocol
-import com.example.btremote.protocol.ReadProtocolFromJson
-import org.json.JSONArray
+import com.example.btremote.app.App
+import com.example.btremote.database.protocol.Protocol
+import com.example.btremote.tools.readAssetsFile
+import com.example.btremote.viewmodel.MainViewModel
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun DFProtocol(context: Context = LocalContext.current) {
 
-    var originalProtocolList = ArrayList<Protocol>()
-    val json = ReadProtocolFromJson.readAssetsFile(context, "protocol.json")
-    if (json != null)
-        originalProtocolList = ReadProtocolFromJson.getLocalProtocol(json) as ArrayList<Protocol>
-
+    val model: MainViewModel = viewModel()
+    val originalProtocolList by model.protocols.collectAsState(listOf())
     var isOpenOriginal by remember {
         mutableStateOf(true)
     }
-
     var isOpenCustom by remember {
         mutableStateOf(true)
     }
@@ -90,8 +86,9 @@ fun DFProtocol(context: Context = LocalContext.current) {
         AnimatedVisibility(
             visible = isOpenOriginal,
         ) {
-            Column() {
+            Column {
                 originalProtocolList.forEach {
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

@@ -31,8 +31,6 @@ import com.example.btremote.protocol.string2Byte
 import com.example.btremote.tools.SaveDataToLocalFile
 import com.example.btremote.tools.ToastUtil
 import com.example.btremote.ui.theme.roundedCorner10dp
-import com.example.btremote.viewmodel.MainViewModel
-import com.example.btremote.viewmodel.STRING_DATA
 
 data class UartBond(var bond: Int)
 

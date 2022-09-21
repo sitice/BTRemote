@@ -23,8 +23,10 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -49,6 +51,8 @@ fun Buttons(
 ) {
     val progress = remember { mutableStateOf(0f) }
     val patter = longArrayOf(0,10)
+
+    val haptic = LocalHapticFeedback.current
     sliderVal = EasyDataStore.getSyncData("silder_progress", 0)
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -199,7 +203,7 @@ fun Buttons(
             onValueChangeFinished = {
                 sliderVal = progress.value.toInt()
                 EasyDataStore.putSyncData("silder_progress", sliderVal)
-                AppUtils.instance?.vibratorForLollipop(context,patter)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             },
             enabled = !editModelState.value,
             valueRange = 0f..2f,
@@ -344,7 +348,7 @@ fun Buttons(
                 nowEditView.value = "XBoxA"
             else {
                 keyVal = keyValMap["XBoxA"]!!
-                AppUtils.instance?.vibratorForLollipop(context,patter)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
         }, modifier = Modifier
             .align(Alignment.BottomEnd)
@@ -376,7 +380,7 @@ fun Buttons(
                 nowEditView.value = "XBoxB"
             else {
                 keyVal = keyValMap["XBoxB"]!!
-                AppUtils.instance?.vibratorForLollipop(context,patter)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
 
         }, modifier = Modifier
@@ -409,7 +413,7 @@ fun Buttons(
                 nowEditView.value = "XBoxX"
             else {
                 keyVal = keyValMap["XBoxX"]!!
-                AppUtils.instance?.vibratorForLollipop(context,patter)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
         }, modifier = Modifier
             .align(Alignment.BottomEnd)
@@ -442,7 +446,7 @@ fun Buttons(
                 nowEditView.value = "XBoxY"
             else {
                 keyVal = keyValMap["XBoxY"]!!
-                AppUtils.instance?.vibratorForLollipop(context,patter)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
         }, modifier = Modifier
             .align(Alignment.BottomEnd)
@@ -475,7 +479,7 @@ fun Buttons(
                 nowEditView.value = "Left"
             else {
                 keyVal = keyValMap["Left"]!!
-                AppUtils.instance?.vibratorForLollipop(context,patter)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
         }, modifier = Modifier
             .align(Alignment.BottomStart)
@@ -508,7 +512,7 @@ fun Buttons(
                 nowEditView.value = "Right"
             else {
                 keyVal = keyValMap["Right"]!!
-                AppUtils.instance?.vibratorForLollipop(context,patter)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
         }, modifier = Modifier
             .align(Alignment.BottomStart)
@@ -541,7 +545,7 @@ fun Buttons(
                 nowEditView.value = "Up"
             else {
                 keyVal = keyValMap["Up"]!!
-                AppUtils.instance?.vibratorForLollipop(context,patter)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
         }, modifier = Modifier
             .align(Alignment.BottomStart)
@@ -574,7 +578,7 @@ fun Buttons(
                 nowEditView.value = "Down"
             else {
                 keyVal = keyValMap["Down"]!!
-                AppUtils.instance?.vibratorForLollipop(context,patter)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
         }, modifier = Modifier
             .align(Alignment.BottomStart)
@@ -607,7 +611,7 @@ fun Buttons(
                     nowEditView.value = "Blue"
                 else {
                     keyVal = keyValMap["Blue"]!!
-                    AppUtils.instance?.vibratorForLollipop(context,patter)
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 }
             },
             modifier = Modifier
@@ -647,7 +651,7 @@ fun Buttons(
                     nowEditView.value = "Yellow"
                 else {
                     keyVal = keyValMap["Yellow"]!!
-                    AppUtils.instance?.vibratorForLollipop(context,patter)
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 }
             },
             modifier = Modifier

@@ -27,7 +27,7 @@ fun ConnectBar(
     openBluetoothDialog: MutableState<Boolean>,
     openWifiDialog: MutableState<Boolean>,
     openUSBDialog: MutableState<Boolean>,
-    isDark: Boolean,
+    isDark: Boolean,//选择黑白图标
     context: Context = LocalContext.current
 ) {
     val wifiName = App.wifiNameFlow.collectAsState()
@@ -56,7 +56,7 @@ fun ConnectBar(
             connectedBluetoothDeviceState.value?.let {
                 Text(
                     text = it.name,
-                    fontSize = 10.sp,
+                    fontSize = 7.sp,
                     color = if (!isDark) Color.DarkGray else Color.White,
                     fontFamily = FontFamily.Monospace,
                     modifier = Modifier.offset(y = 35.dp)
@@ -73,7 +73,6 @@ fun ConnectBar(
             } else {
                 openWifiDialog.value = true
             }
-
         }) {
             Icon(
                 painter = painterResource(
@@ -94,7 +93,7 @@ fun ConnectBar(
         )
             Text(
                 text = wifiName.value,
-                fontSize = 80.sp / wifiName.value.length,
+                fontSize = 7.sp,
                 color = if (!isDark) Color.DarkGray else Color.White,
                 fontFamily = FontFamily.Monospace,
                 modifier = Modifier
@@ -108,7 +107,6 @@ fun ConnectBar(
                 painter = painterResource(id = R.drawable.baseline_usb_black_24dp),
                 contentDescription = null, tint = if (!isDark) Color.Black else Color.White
             )
-
         }
         Text(text = "", color = if (!isDark) Color.DarkGray else Color.White)
     }

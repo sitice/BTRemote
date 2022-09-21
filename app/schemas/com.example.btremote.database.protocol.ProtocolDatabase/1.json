@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "94106851a2846f767c2d0233ed762462",
+    "identityHash": "3e7f7790c6bb7668798c1a3b2bd0b753",
     "entities": [
       {
         "tableName": "Protocol",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `viewName` TEXT NOT NULL, `offsetX` REAL NOT NULL, `offsetY` REAL NOT NULL, `scale` REAL NOT NULL, `rotationAngle` REAL NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `mAdd` INTEGER NOT NULL, `tarAdd` INTEGER NOT NULL, `frameType` INTEGER NOT NULL, `ctrlType` INTEGER NOT NULL, `length` INTEGER NOT NULL, `isOpen` INTEGER NOT NULL, `dataList` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -15,33 +15,51 @@
             "notNull": true
           },
           {
-            "fieldPath": "viewName",
-            "columnName": "viewName",
+            "fieldPath": "name",
+            "columnName": "name",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "offsetX",
-            "columnName": "offsetX",
-            "affinity": "REAL",
+            "fieldPath": "mAddress",
+            "columnName": "mAdd",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "offsetY",
-            "columnName": "offsetY",
-            "affinity": "REAL",
+            "fieldPath": "targetAddress",
+            "columnName": "tarAdd",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "scale",
-            "columnName": "scale",
-            "affinity": "REAL",
+            "fieldPath": "frameType",
+            "columnName": "frameType",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "rotationAngle",
-            "columnName": "rotationAngle",
-            "affinity": "REAL",
+            "fieldPath": "ctrlType",
+            "columnName": "ctrlType",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "length",
+            "columnName": "length",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isOpen",
+            "columnName": "isOpen",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataList",
+            "columnName": "dataList",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -58,7 +76,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '94106851a2846f767c2d0233ed762462')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3e7f7790c6bb7668798c1a3b2bd0b753')"
     ]
   }
 }

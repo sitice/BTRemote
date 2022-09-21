@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.example.btremote.R
 
 @Composable
-fun Setting() {
+fun ProductSetting() {
     Column(
         modifier = Modifier
             .background(Color.White)
@@ -73,6 +73,6 @@ fun Setting() {
 @Composable
 @Preview
 fun SettingPreview() {
-    Setting()
+    ProductSetting()
 }
 

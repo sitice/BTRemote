@@ -7,6 +7,9 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.view.WindowManager
+import com.example.btremote.protocol.pitch
+import com.example.btremote.protocol.roll
+import com.example.btremote.protocol.yaw
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class Orientation(private val context: Context) {
@@ -53,7 +56,9 @@ class Orientation(private val context: Context) {
     val angles = MutableStateFlow(floatArrayOf(0f, 0f, 0f))
 
     fun init() {
-
+        pitch = 0
+        roll = 0
+        yaw = 0
         sensorManager.registerListener(listener, gyro, SensorManager.SENSOR_DELAY_UI)
         sensorManager.registerListener(listener, mag, SensorManager.SENSOR_DELAY_UI)
         sensorManager.registerListener(listener, acc, SensorManager.SENSOR_DELAY_UI)
@@ -79,6 +84,9 @@ class Orientation(private val context: Context) {
     }
 
     fun unregister() {
+        pitch = 0
+        roll = 0
+        yaw = 0
         sensorManager.unregisterListener(listener)
     }
 
@@ -95,7 +103,10 @@ class Orientation(private val context: Context) {
         for (i in 0..2) {
             orientationValues[i] = Math.toDegrees(orientationValues[i].toDouble()).toFloat()
         }
-       angles.value = orientationValues
+        angles.value = orientationValues
+        pitch = orientationValues[0].toInt()
+        roll = orientationValues[1].toInt()
+        yaw = orientationValues[2].toInt()
     }
 
     companion object {

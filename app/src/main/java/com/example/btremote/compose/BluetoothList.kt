@@ -87,7 +87,7 @@ fun BluetoothList(paired: List<BluetoothDevice>, unpaired: List<BluetoothDevice>
                     Image(painter = painterResource(id = R.drawable.bluetooth), contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(30.dp))
                     Column {
-                        Text(text = it.name, fontSize = 15.sp)
+                        Text(text = it.name?:"null", fontSize = 15.sp)
                         if (clickDevice == it && bluetoothStatus.value == BLUETOOTHStatus.CONNECTING)
                             Text(text = "正在连接中……", fontSize = 9.sp)
                     }

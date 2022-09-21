@@ -1,5 +1,8 @@
 package com.example.btremote.protocol
 
+import android.util.Log
+import com.example.btremote.tools.ToastUtil
+import java.nio.ByteBuffer
 import java.util.*
 import kotlin.experimental.and
 
@@ -193,9 +196,9 @@ fun getChar(arr: ByteArray, index: Int): Char {
 }
 
 // 从UByte数组的index处的连续两个字节获得一个UShort
-fun getUShort(arr: ByteArray, index: Int): UShort {
+fun getUShort(arr: ByteArray, index: Int): UShort? {
     return when (arr.size - index) {
-        0 -> 0u
+        0 -> null
         1 -> arr[index].toUShort()
         else -> (0x00ff and arr[index].toInt() or (0xff00 and arr[index + 1].toInt() shl 8)).toUShort()
     }
@@ -285,7 +288,6 @@ fun getLong(arr: ByteArray, index: Int): Long? {
     }
 }
 
-@ExperimentalUnsignedTypes
 fun getFloat(arr: ByteArray, index: Int): Float? {
     return getInt(arr, index)?.let { java.lang.Float.intBitsToFloat(it) }
 }
@@ -326,23 +328,27 @@ fun bytesToHexString(src: ByteArray?): String? {
     if (src == null || src.isEmpty()) {
         return null
     }
-    for (i in src.indices) {
-        val v: Byte = src[i] and 0xFF.toByte()
-        val hv = Integer.toHexString(v.toInt())
-        if (hv.length < 2) {
-            stringBuilder.append(0)
+    for (i in src) {
+        if (i.toUByte() < 16u) {
+            stringBuilder.append(String.format("0%X", i))
+        } else {
+            stringBuilder.append(String.format("%X", i))
         }
-        stringBuilder.append(hv)
     }
     return stringBuilder.toString()
 }
 
 fun string2Byte(s: String): ByteArray {
-    val result = ByteArray(s.length / 2)
+    var str = s
+    if (str.length % 2 == 1) {
+        val stringBuilder = StringBuilder()
+        str = stringBuilder.append(str).insert(str.length - 1, "0").toString()
+    }
+    val result = ByteArray(str.length / 2)
     var j = 0
     for (i in 0 until (s.length + 1) / 2) {
-        result[i] = char2Byte(s[j++])
-        result[i] = (char2Byte(s[j++]) + (result[i].toInt() shl 4)).toByte()
+        result[i] = char2Byte(str[j++])
+        result[i] = (char2Byte(str[j++]) + (result[i].toInt() shl 4)).toByte()
     }
     return result
 }
@@ -357,6 +363,7 @@ fun char2Byte(c: Char): Byte {
     }
     return (-1).toByte()
 }
+
 /**
  * 字符串转化成为ByteArray
  * @param s 字符串

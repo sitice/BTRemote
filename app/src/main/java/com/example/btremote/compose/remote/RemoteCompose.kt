@@ -53,9 +53,9 @@ import com.example.btremote.tools.EasyDataStore.dataStore1
 import com.example.btremote.ui.theme.Blue
 import com.example.btremote.ui.theme.gradient3
 import com.example.btremote.viewmodel.RemoteViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.roundToInt
 
-@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewModel = viewModel()) {
@@ -116,6 +116,10 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
     }
 
 
+    val distanceX by model.distanceXFlow.collectAsState()
+    val distanceY by model.distanceYFlow.collectAsState()
+    val yaw by model.yawFlow.collectAsState()
+    val voltage by model.voltageFlow.collectAsState()
 
     val addButtonAnimate = animateFloatAsState(
         targetValue = if (toolVisible) 45f else 0f,
@@ -294,7 +298,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
                                 .padding(start = 5.dp), color = Color.White, fontSize = 10.sp
                         )
                         Text(
-                            text = String.format("%.1f",eulerAngle.value[0]), modifier = Modifier
+                            text = String.format("%.1f", eulerAngle.value[0]), modifier = Modifier
                                 .padding(start = 5.dp)
                                 .width(30.dp), color = Color.White, fontSize = 10.sp
                         )
@@ -303,7 +307,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
                                 .padding(start = 0.dp), color = Color.White, fontSize = 10.sp
                         )
                         Text(
-                            text = String.format("%.1f",eulerAngle.value[1]), modifier = Modifier
+                            text = String.format("%.1f", eulerAngle.value[1]), modifier = Modifier
                                 .padding(start = 5.dp)
                                 .width(30.dp), color = Color.White, fontSize = 10.sp
                         )
@@ -312,7 +316,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
                                 .padding(start = 0.dp), color = Color.White, fontSize = 10.sp
                         )
                         Text(
-                            text = String.format("%.1f",eulerAngle.value[2]), modifier = Modifier
+                            text = String.format("%.1f", eulerAngle.value[2]), modifier = Modifier
                                 .padding(start = 5.dp)
                                 .width(30.dp), color = Color.White, fontSize = 10.sp
                         )
@@ -332,7 +336,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
                         .padding(start = 10.dp), color = Color.White, fontSize = 11.sp
                 )
                 Text(
-                    text = "null", modifier = Modifier
+                    text = distanceX ?: "null", modifier = Modifier
                         .padding(start = 10.dp)
                         .width(35.dp), color = Color.White, fontSize = 11.sp
                 )
@@ -341,7 +345,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
                         .padding(start = 0.dp), color = Color.White, fontSize = 11.sp
                 )
                 Text(
-                    text = "null", modifier = Modifier
+                    text = distanceY ?: "null", modifier = Modifier
                         .padding(start = 5.dp)
                         .width(35.dp), color = Color.White, fontSize = 11.sp
                 )
@@ -358,7 +362,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
                         .padding(start = 5.dp), color = Color.White, fontSize = 11.sp
                 )
                 Text(
-                    text = "null", modifier = Modifier
+                    text = yaw ?: "null", modifier = Modifier
                         .padding(start = 10.dp)
                         .width(35.dp), color = Color.White, fontSize = 11.sp
                 )
@@ -376,7 +380,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
                         .padding(start = 5.dp), color = Color.White, fontSize = 11.sp
                 )
                 Text(
-                    text = "null", modifier = Modifier
+                    text = voltage ?: "null", modifier = Modifier
                         .padding(start = 10.dp)
                         .width(35.dp), color = Color.White, fontSize = 11.sp
                 )

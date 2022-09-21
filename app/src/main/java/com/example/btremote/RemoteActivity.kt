@@ -61,6 +61,7 @@ class RemoteActivity : ComponentActivity() {
             }
         }
         val model: RemoteViewModel by viewModels()
+        model.getChariotFlow()
         model.requestLauncher =
             this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {

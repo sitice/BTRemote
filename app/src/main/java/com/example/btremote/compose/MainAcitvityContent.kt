@@ -1,11 +1,11 @@
 package com.example.btremote.compose
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,7 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -21,7 +20,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,8 +27,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.btremote.MainActivity
 import com.example.btremote.R
 import com.example.btremote.app.App
-import com.example.btremote.app.BLUETOOTHStatus
-import com.example.btremote.app.WIFIStatus
 import com.example.btremote.compose.about.About
 import com.example.btremote.compose.baseSendRec.BaseSendRec
 import com.example.btremote.compose.dfprotocol.DFProtocol
@@ -40,12 +36,10 @@ import com.example.btremote.compose.tab.Screen
 import com.example.btremote.compose.more.MoreShowCompose
 import com.example.btremote.compose.product.*
 import com.example.btremote.lifecycle.REQUEST_ENABLE_BT
-import com.example.btremote.tools.ToastUtil
 import com.example.btremote.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
 
-@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
@@ -55,10 +49,9 @@ fun MainActivityScaffold(context: Context = LocalContext.current) {
 
     val navController = rememberNavController()
 
-
-
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
+
     val openWifiDialog = remember {
         mutableStateOf(false)
     }
@@ -83,12 +76,20 @@ fun MainActivityScaffold(context: Context = LocalContext.current) {
     }
 
     ShowBluetoothDevice(openDialog = openBluetoothDialog) {
+        //蓝牙开关回调
         if (it) {
             val bluetoothAdapter: BluetoothAdapter = App.bluetoothService.mManager.adapter
             if (!bluetoothAdapter.isEnabled) {
                 val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                model.requestLauncher.launch(intent)
                 val activity = context as MainActivity
+                val requestLauncher =
+                    activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                        if (result.resultCode == Activity.RESULT_OK) {
+                            //根据广播可以知道蓝牙状态
+                            //App.bluetoothStateFlow.value = true
+                        }
+                    }
+                requestLauncher.launch(intent)
                 activity.setResult(REQUEST_ENABLE_BT)
             }
         } else {
@@ -123,7 +124,7 @@ fun MainActivityScaffold(context: Context = LocalContext.current) {
                             }
                         })
                 }, actions = {
-                    ConnectBar(openBluetoothDialog,openWifiDialog,openUSBDialog,false)
+                    ConnectBar(openBluetoothDialog, openWifiDialog, openUSBDialog, false)
                 })
 
         },
@@ -157,13 +158,18 @@ fun MainActivityScaffold(context: Context = LocalContext.current) {
                     model.nowScreenLiveData.value = Screens.recSendScreen
                     BaseSendRec()
                 }
-
             }
             composable(Screens.productScreen) {
                 model.nowScreenLiveData.value = Screens.productScreen
                 isOpenBottomSheet.value = false
                 isShowTopBar.value = true
                 ProductScreen(navController)
+            }
+            composable(Screens.productSettingScreen) {
+                model.nowScreenLiveData.value = Screens.productSettingScreen
+                isOpenBottomSheet.value = false
+                isShowTopBar.value = true
+                ProductSetting()
             }
             composable(Screens.settingScreen) {
                 model.nowScreenLiveData.value = Screens.settingScreen
@@ -197,7 +203,6 @@ fun MainActivityScaffold(context: Context = LocalContext.current) {
             }
         }
     }
-
 }
 
 

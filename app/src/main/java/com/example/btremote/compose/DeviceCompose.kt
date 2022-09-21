@@ -29,13 +29,7 @@ fun DeviceCompose( navController: NavHostController) {
     ) {
         Card(
             onClick = {
-                navController.navigate(Screens.productScreen) {
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
-                }
+                navController.navigate(Screens.productScreen)
             },
             modifier = Modifier
                 .padding(end = 10.dp)
