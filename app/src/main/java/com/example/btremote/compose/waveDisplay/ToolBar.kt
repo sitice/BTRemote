@@ -1,8 +1,6 @@
 package com.example.btremote.compose.waveDisplay
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -10,15 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.btremote.R
-import com.example.btremote.protocol.buttonsList
-import com.example.btremote.tools.EasyDataStore
-import com.example.btremote.tools.EasyDataStore.dataStore1
 
 @Composable
 fun ToolBar(modifier: Modifier, open: MutableState<Boolean>) {
@@ -65,7 +58,8 @@ fun ToolBar(modifier: Modifier, open: MutableState<Boolean>) {
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
-                    painter = painterResource(id = R.drawable.baseline_settings_backup_restore_black_24dp),
+                    modifier = Modifier.size(20.dp),
+                    painter = painterResource(id = R.drawable.reset),
                     contentDescription = null
                 )
                 Text(text = "恢复", fontSize = 11.sp)

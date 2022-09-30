@@ -1,0 +1,145 @@
+[
+  {
+    "name" : "leftRocker",
+    "type": 0,
+    "offsetX": -700.0,
+    "offsetY": 200.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 0,
+    "arg2": 0
+  },
+  {
+    "name" : "rightRocker",
+    "type": 0,
+    "offsetX": 700.0,
+    "offsetY": 200.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 0,
+    "arg2": 0
+  },
+  {
+    "name" : "upperButton",
+    "type": 1,
+    "offsetX": -250.0,
+    "offsetY": 50.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 1,
+    "arg2": 0
+  },
+  {
+    "name" : "lowerButton",
+    "type": 2,
+    "offsetX": -250.0,
+    "offsetY": 300.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 2,
+    "arg2": 0
+  },
+  {
+    "name" : "leftButton",
+    "type": 3,
+    "offsetX": -375.0,
+    "offsetY": 175.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 3,
+    "arg2": 0
+  },
+  {
+    "name" : "rightButton",
+    "type": 4,
+    "offsetX": -125.0,
+    "offsetY": 175.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 4,
+    "arg2": 0
+  },
+  {
+    "name" : "xboxAButton",
+    "type": 5,
+    "offsetX": 250.0,
+    "offsetY": 300.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 5,
+    "arg2": 0
+  },
+  {
+    "name" : "xboxBButton",
+    "type": 6,
+    "offsetX": 375.0,
+    "offsetY": 175.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 6,
+    "arg2": 0
+  },
+  {
+    "name" : "xboxXButton",
+    "type": 7,
+    "offsetX": 125.0,
+    "offsetY": 175.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 7,
+    "arg2": 0
+  },
+  {
+    "name" : "xboxYButton",
+    "type": 8,
+    "offsetX": 250.0,
+    "offsetY": 50.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": null,
+    "arg1": 8,
+    "arg2": 0
+  },
+  {
+    "name" : "slider",
+    "type": 9,
+    "offsetX": 0,
+    "offsetY": 400,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": 0,
+    "arg1": 2,
+    "arg2": 0
+  },
+  {
+    "name" : "yellowButton",
+    "type": 10,
+    "offsetX": 100.0,
+    "offsetY": -70.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": 0,
+    "arg1": 9,
+    "arg2": 0
+  },
+  {
+    "name" : "blueButton",
+    "type": 10,
+    "offsetX": -100.0,
+    "offsetY": -70.0,
+    "angle": 0.0,
+    "scale": 1.0,
+    "color": 0,
+    "arg1": 10,
+    "arg2": 0
+  }
+]

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.example.btremote.wave.LineChart
 
 @Composable
-fun LineChart(modifier: Modifier,) {
+fun LineChart(modifier: Modifier) {
     //距离左边屏幕距离
     val marginToLeft = 180f
     //距离屏幕下边距离

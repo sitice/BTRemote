@@ -1,71 +1,49 @@
 [
   {
     "name": " ",
-    "mAddress": 255,
-    "targetAddress": 255,
     "frameType": 1,
     "ctrlType": 2,
     "length": 11 ,
-    "isOpen": false,
     "dataList": [
       {
         "dataName": "distanceX",
-        "dataType": "u8",
-        "color": 14972803,
-        "select": false
+        "dataType": "u8"
       },
       {
         "dataName": "distanceY",
-        "dataType": "s16",
-        "color": 14972803,
-        "select": false
+        "dataType": "s16"
       },
       {
         "dataName": "yaw",
-        "dataType": "u32",
-        "color": 14972803,
-        "select": false
+        "dataType": "u32"
       },
       {
         "dataName": "voltage",
-        "dataType": "sfloat",
-        "color": 14972803,
-        "select": false
+        "dataType": "float"
       }
     ]
   },
   {
     "name": "1",
-    "mAddress": 2,
-    "targetAddress": 2,
     "frameType": 2,
     "ctrlType": 2,
     "length": 4,
-    "isOpen": false,
     "dataList": [
       {
         "dataName": "1",
-        "dataType": "u8",
-        "color": 14972803,
-        "select": false
+        "dataType": "u8"
       },
       {
         "dataName": "1",
-        "dataType": "u8",
-        "color": 14972803,
-        "select": false
+        "dataType": "u8"
       },
       {
         "dataName": "1",
-        "dataType": "u8",
-        "color": 14972803,
-        "select": false
+        "dataType": "u8"
       },
       {
         "dataName": "1",
-        "dataType": "u8",
-        "color": 14972803,
-        "select": false
+        "dataType": "u8"
       }
     ]
   }

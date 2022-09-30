@@ -143,55 +143,56 @@ fun readUartData(s: ByteArray, index: Int) {
                            len: Byte,
                            data: ByteArray,
                            recType: Int ->
-        App.DFProtocolList.forEach { dfProtocol ->
-            if (recAddress == dfProtocol.mAddress &&
-                tarAddress == dfProtocol.targetAddress &&
-                frameType == dfProtocol.frameType &&
-                ctrlType == dfProtocol.ctrlType &&
-                len == dfProtocol.len
-            ) {
-                var nowIndex = 0
-                dfProtocol.dataList.forEach { dFProtocolData ->
-                    dFProtocolData.dataFlow.value = when (dFProtocolData.dataType) {
-                        "u8" -> {
-                            nowIndex++
-                            data[nowIndex - 1].toUByte().toString()
-                        }
-                        "u16" -> {
-                            nowIndex += 2
-                            getUShort(data, nowIndex - 2).toString()
-                        }
-                        "u32" -> {
-                            nowIndex += 4
-                            getUInt(data, nowIndex - 4).toString()
-                        }
-                        "s8" -> {
-                            nowIndex++
-                            data[nowIndex - 1].toString()
-                        }
-                        "s16" -> {
-                            nowIndex += 2
-                            getShort(data, nowIndex - 2).toString()
-                        }
-                        "s32" -> {
-                            nowIndex += 4
-                            getInt(data, nowIndex - 4).toString()
-                        }
-                        "sfloat" -> {
-                            nowIndex += 4
-                            (getInt(data, nowIndex - 4)!! / 100f).toString()
-                        }
-                        "ufloat" -> {
-                            nowIndex += 4
-                            (getUInt(data, nowIndex - 4)!!.toLong() / 100f).toString()
-                        }
-                        else -> {
-                            null
-                        }
-                    }
-                }
-            }
-        }
+//        App.DFProtocolList.forEach { dfProtocol ->
+//            if (recAddress == dfProtocol.mAddress &&
+//                tarAddress == dfProtocol.targetAddress &&
+//                frameType == dfProtocol.frameType &&
+//                ctrlType == dfProtocol.ctrlType &&
+//                len == dfProtocol.len
+//            ) {
+//                var nowIndex = 0
+//                dfProtocol.dataList.forEach { dFProtocolData ->
+//                    dFProtocolData.dataFlow.value = when (dFProtocolData.dataType) {
+//                        "u8" -> {
+//                            nowIndex++
+//                            data[nowIndex - 1].toUByte().toString()
+//                        }
+//                        "u16" -> {
+//                            nowIndex += 2
+//                            getUShort(data, nowIndex - 2).toString()
+//                        }
+//                        "u32" -> {
+//                            nowIndex += 4
+//                            getUInt(data, nowIndex - 4).toString()
+//                        }
+//                        "s8" -> {
+//                            nowIndex++
+//                            data[nowIndex - 1].toString()
+//                        }
+//                        "s16" -> {
+//                            nowIndex += 2
+//                            getShort(data, nowIndex - 2).toString()
+//                        }
+//                        "s32" -> {
+//                            nowIndex += 4
+//                            getInt(data, nowIndex - 4).toString()
+//                        }
+//                        "sfloat" -> {
+//                            nowIndex += 4
+//                            (getInt(data, nowIndex - 4)!! / 100f).toString()
+//                        }
+//                        "ufloat" -> {
+//                            nowIndex += 4
+//                            (getUInt(data, nowIndex - 4)!!.toLong() / 100f).toString()
+//                        }
+//                        else -> {
+//                            null
+//                        }
+//                    }
+//                    dFProtocolData.dataFlow.value?.let { dFProtocolData.setData }
+//                }
+//            }
+//        }
     }
 }
 

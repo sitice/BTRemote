@@ -12,11 +12,13 @@ data class DFProtocol(
     val len: Byte,
     val dataList: List<Data>
 ) {
-    data class Data(
+    class Data(
         val dataName: String,
         val dataType: String,
         var color: Int,
         var isSelect: Boolean,
         val dataFlow: MutableStateFlow<String?>
-    )
+    ){
+        val setData:(str:String)->Unit = {}
+    }
 }

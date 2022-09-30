@@ -1,16 +1,10 @@
 package com.example.btremote
 
 import android.app.Activity
-import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,13 +18,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.btremote.app.App
-import com.example.btremote.compose.remote.RemoteCompose
+import com.example.btremote.compose.remoteActivity.RemoteCompose
 import com.example.btremote.protocol.sendRemoteVal
 import com.example.btremote.ui.theme.BTRemoteTheme
 import com.example.btremote.viewmodel.RemoteViewModel
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlinx.coroutines.runBlocking
 import java.util.*
 
 class RemoteActivity : ComponentActivity() {
@@ -61,13 +54,6 @@ class RemoteActivity : ComponentActivity() {
             }
         }
         val model: RemoteViewModel by viewModels()
-        model.getChariotFlow()
-        model.requestLauncher =
-            this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    //App.bluetoothStateFlwo.value = true
-                }
-            }
         timer.schedule(timerTask, 1000, 20)
         orientation = Orientation.instance(this)
 

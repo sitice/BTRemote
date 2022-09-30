@@ -1,21 +1,21 @@
 package com.example.btremote.tools
 
+import android.R
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.view.View
 import android.view.View.*
 import android.view.Window
 import android.widget.Toast
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.WindowInsetsCompat
-import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
-import androidx.datastore.preferences.preferencesDataStore
-import com.example.btremote.app.App
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
 import java.io.*
 import java.nio.charset.Charset
 
@@ -209,182 +209,52 @@ object WindowManager {
 
 }
 
-
-object EasyDataStore {
-    val Context.dataStore1: DataStore<Preferences> by preferencesDataStore(name = "ViewPos")
-
-    // DataStore变量
-    var dataStore = App.appContext.dataStore1
-    fun readSendRecType(context: Context) {
-        dataStore = context.dataStore1
-        App.baseSendType.value = getSyncData("baseSendType", "Bluetooth")
-        App.baseRecType.value = getSyncData("baseRecType", "Bluetooth")
-        App.advanceSendType.value = getSyncData("advanceSendType", "Bluetooth")
-        App.advanceRecType.value = getSyncData("advanceRecType", "Bluetooth")
-        App.remoteSendType.value = getSyncData("remoteSendType", "Bluetooth")
-        App.remoteRecType.value = getSyncData("remoteRecType", "Bluetooth")
-        App.waveSendType.value = getSyncData("waveSendType", "Bluetooth")
-        App.waveRecType.value = getSyncData("waveRecType", "Bluetooth")
-    }
-
-    /**
-     * 存数据
-     */
-    suspend fun <T> putAsyncData(key: String, value: T) {
-        when (value) {
-            is Int -> putIntData(key, value)
-            is Long -> putLongData(key, value)
-            is String -> putStringData(key, value)
-            is Boolean -> putBooleanData(key, value)
-            is Float -> putFloatData(key, value)
-            is Double -> putDoubleData(key, value)
-            else -> throw IllegalArgumentException("This type cannot be saved to the Data Store")
-        }
-
-    }
-
-    /**
-     * 存数据
-     */
-    fun <T> putSyncData(key: String, value: T) {
-        runBlocking {
-            when (value) {
-                is Int -> putIntData(key, value)
-                is Long -> putLongData(key, value)
-                is String -> putStringData(key, value)
-                is Boolean -> putBooleanData(key, value)
-                is Float -> putFloatData(key, value)
-                is Double -> putDoubleData(key, value)
-                else -> throw IllegalArgumentException("This type cannot be saved to the Data Store")
+@SuppressLint("QueryPermissionsNeeded")
+fun openMail(context: Context, email:String) {
+    val uri: Uri = Uri.parse("mailto:$email")
+    val packageInfo: List<ResolveInfo> =
+        context.packageManager.queryIntentActivities(Intent(Intent.ACTION_SENDTO, uri), 0)
+    val tempPkgNameList: MutableList<String> = ArrayList()
+    val emailIntents: MutableList<Intent> = ArrayList()
+    for (info in packageInfo) {
+        val pkgName = info.activityInfo.packageName
+        if (!tempPkgNameList.contains(pkgName)) {
+            tempPkgNameList.add(pkgName)
+            val intent: Intent? = context.packageManager.getLaunchIntentForPackage(pkgName)
+            if (intent != null) {
+                emailIntents.add(intent)
             }
         }
     }
-
-    /**
-     * 取数据
-     */
-    fun <T> getSyncData(key: String, defaultValue: T): T {
-        var data: T? = null
-        runBlocking {
-            data = when (defaultValue) {
-                is Int -> getIntData(key, defaultValue) as T
-                is Long -> getLongData(key, defaultValue) as T
-                is String -> getStringData(key, defaultValue) as T
-                is Boolean -> getBooleanData(key, defaultValue) as T
-                is Float -> getFloatData(key, defaultValue) as T
-                is Double -> getDoubleData(key, defaultValue) as T
-                else -> throw IllegalArgumentException("This type cannot be saved to the Data Store")
-            }
+    if (emailIntents.isNotEmpty()) {
+        val intent = Intent(Intent.ACTION_SENDTO, uri)
+        intent.putExtra(Intent.EXTRA_CC, email) // 抄送人
+        intent.putExtra(Intent.EXTRA_SUBJECT, "这是邮件的主题部分") // 主题
+        intent.putExtra(Intent.EXTRA_TEXT, "这是邮件的正文部分") // 正文
+        val chooserIntent =
+            Intent.createChooser(intent, "请选择邮箱")
+        if (chooserIntent != null) {
+            context.startActivity(chooserIntent)
+        } else {
+            ToastUtil.toast(context,"当前系统中没有邮箱应用")
         }
-        return data ?: defaultValue
+    } else {
+        ToastUtil.toast(context,"当前系统中没有邮箱应用")
     }
-
-    /**
-     * 取数据
-     */
-    suspend fun <T> getAsyncData(key: String, defaultValue: T): T {
-        val data = when (defaultValue) {
-            is Int -> getIntData(key, defaultValue)
-            is Long -> getLongData(key, defaultValue)
-            is String -> getStringData(key, defaultValue)
-            is Boolean -> getBooleanData(key, defaultValue)
-            is Float -> getFloatData(key, defaultValue)
-            is Double -> getDoubleData(key, defaultValue)
-            else -> throw IllegalArgumentException("This type cannot be saved to the Data Store")
-        }
-        return data as T
-    }
-
-    /**
-     * 存放Int数据
-     */
-    private suspend fun putIntData(key: String, value: Int) = dataStore.edit {
-        it[intPreferencesKey(key)] = value
-    }
-
-    /**
-     * 存放Long数据
-     */
-    private suspend fun putLongData(key: String, value: Long) = dataStore.edit {
-        it[longPreferencesKey(key)] = value
-    }
-
-    /**
-     * 存放String数据
-     */
-    private suspend fun putStringData(key: String, value: String) = dataStore.edit {
-        it[stringPreferencesKey(key)] = value
-    }
-
-    /**
-     * 存放Boolean数据
-     */
-    private suspend fun putBooleanData(key: String, value: Boolean) = dataStore.edit {
-        it[booleanPreferencesKey(key)] = value
-    }
-
-    /**
-     * 存放Float数据
-     */
-    private suspend fun putFloatData(key: String, value: Float) = dataStore.edit {
-        it[floatPreferencesKey(key)] = value
-    }
-
-    /**
-     * 存放Double数据
-     */
-    private suspend fun putDoubleData(key: String, value: Double) = dataStore.edit {
-        it[doublePreferencesKey(key)] = value
-    }
-
-    /**
-     * 取出Int数据
-     */
-    private suspend fun getIntData(key: String, default: Int = 0): Int = dataStore.data.map {
-        it[intPreferencesKey(key)] ?: default
-    }.first()
-
-    /**
-     * 取出Long数据
-     */
-    private suspend fun getLongData(key: String, default: Long = 0): Long = dataStore.data.map {
-        it[longPreferencesKey(key)] ?: default
-    }.first()
-
-
-    /**
-     * 取出String数据
-     */
-    private suspend fun getStringData(key: String, default: String? = null): String =
-        dataStore.data.map {
-            it[stringPreferencesKey(key)] ?: default
-        }.first()!!
-
-    /**
-     * 取出Boolean数据
-     */
-    private suspend fun getBooleanData(key: String, default: Boolean = false): Boolean =
-        dataStore.data.map {
-            it[booleanPreferencesKey(key)] ?: default
-        }.first()
-
-    /**
-     * 取出Float数据
-     */
-    private suspend fun getFloatData(key: String, default: Float = 0.0f): Float =
-        dataStore.data.map {
-            it[floatPreferencesKey(key)] ?: default
-        }.first()
-
-    /**
-     * 取出Double数据
-     */
-    private suspend fun getDoubleData(key: String, default: Double = 0.00): Double =
-        dataStore.data.map {
-            it[doublePreferencesKey(key)] ?: default
-        }.first()
-
 }
+
+fun addQQ(context: Context,qq:String)
+{
+    try {
+        val url = "mqqwpa://im/chat?chat_type=wpa&uin=$qq"
+        //uin是发送过去的qq号码
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    } catch (e:Exception) {
+        ToastUtil.toast(context,"请先安装qq")
+    }
+}
+
+
 
 fun readAssetsFile(context: Context, fileName: String?): String? {
     try {

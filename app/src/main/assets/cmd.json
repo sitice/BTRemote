@@ -1,0 +1,17 @@
+[
+  {
+    "name" : "cmd1",
+    "type": 0,
+    "cmd": ""
+  },
+  {
+    "name" : "cmd2",
+    "type": 0,
+    "cmd": ""
+  },
+  {
+    "name" : "cmd3",
+    "type": 0,
+    "cmd": ""
+  }
+]

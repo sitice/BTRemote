@@ -1,6 +1,6 @@
 package com.example.btremote.compose
 
-object Screens{
+object Screens {
     const val mainScreen = "MainScreen"
     const val productScreen = "ProductScreen"
     const val productSettingScreen = "productSettingScreen"

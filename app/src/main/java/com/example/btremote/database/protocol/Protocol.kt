@@ -10,16 +10,11 @@ data class Protocol(
     val id: Int,
     @ColumnInfo(name = "name")
     val name: String,
-    @ColumnInfo(name = "mAdd")
-    val mAddress: Byte,
-    @ColumnInfo(name = "tarAdd")
-    val targetAddress: Byte,
     @ColumnInfo(name = "frameType")
     val frameType: Byte,
     @ColumnInfo(name = "ctrlType")
     val ctrlType: Byte,
     var length :Int,
-    var isOpen:Boolean,
     @ColumnInfo(name = "dataList")
     val dataList: List<Data>
 ) {
@@ -27,8 +22,6 @@ data class Protocol(
     data class Data(
         @PrimaryKey
         val dataName: String,
-        val dataType: String,
-        var color:Int,
-        var select:Boolean = false
+        val dataType: String
     )
 }
