@@ -27,6 +27,21 @@ import kotlinx.coroutines.launch
 class RemoteViewModel : ViewModel() {
 
     val widgets = App.remoteWidgetDao.getAllWidgetFlow()
+    val widgetsTemp = mutableStateListOf<RemoteWidget>()
+
+    var selectWidget by mutableStateOf<RemoteWidget?>(null)
+
+    var name by mutableStateOf("")
+
+    var key by mutableStateOf("")
+
+    var len by mutableStateOf("")
+
+    var nameError by mutableStateOf(false)
+
+    var keyError by mutableStateOf(false)
+
+    var lenError by mutableStateOf(false)
 
     fun change(remoteWidget: RemoteWidget) {
         viewModelScope.launch(Dispatchers.IO) {

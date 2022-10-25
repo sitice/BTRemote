@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alibaba.fastjson.JSON
 import com.example.btremote.Orientation
+import com.example.btremote.app.App
 import com.example.btremote.compose.connect.ConnectBar
 import com.example.btremote.compose.connect.ShowBluetoothDevice
 import com.example.btremote.compose.waveDisplay.ColorSelectDialog
@@ -24,6 +25,11 @@ import com.example.btremote.tools.ToastUtil
 import com.example.btremote.tools.readAssetsFile
 import com.example.btremote.ui.theme.gradient3
 import com.example.btremote.viewmodel.RemoteViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.forEach
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -52,9 +58,6 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
         mutableStateOf(false)
     }
 
-    var selectWidget by remember {
-        mutableStateOf<RemoteWidget?>(null)
-    }
 
     var openNewWidget by remember {
         mutableStateOf(false)
@@ -71,7 +74,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
     var openSelectColor by remember {
         mutableStateOf(false)
     }
-
+    val widgets by model.widgets.collectAsState(initial = emptyList())
     if (openSelectColor) {
         ColorSelectDialog(
             iniColor = 0x03a9f4,
@@ -94,18 +97,32 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
                 openSelectColor = true
                 openNewWidget = false
             },
-            onCancelClick = { openNewWidget = false },
-            onSureClick = { name, key, len ->
-                Log.d("1", "1")
+            onCancelClick = {
                 openNewWidget = false
-                model.insert(
+                model.name = ""
+                model.key = ""
+                model.len = ""
+                model.nameError = false
+                model.keyError = false
+                model.lenError = false
+            },
+            onSureClick = { name, key, len ->
+                openNewWidget = false
+                openNewWidget = false
+                model.name = ""
+                model.key = ""
+                model.len = ""
+                model.nameError = false
+                model.keyError = false
+                model.lenError = false
+                model.widgetsTemp.add(
                     RemoteWidget(
                         name,
                         selectWidgetType!!,
                         0f,
+                        -50f,
                         0f,
-                        0f,
-                        0f,
+                        1f,
                         selectColor,
                         if (selectWidgetType == WidgetType.ROCKER) 0 else if (selectWidgetType == WidgetType.SLIDER) len else key,
                         0
@@ -120,12 +137,12 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
         ShowConfirmDialog(
             text = "你确定要恢复初始布局吗",
             onSureClick = {
-                model.deleteAll()
                 val list = JSON.parseArray(
                     readAssetsFile(context, "remoteWidgets.json"),
                     RemoteWidget::class.java
                 )
-                model.insert(list)
+                model.widgetsTemp.clear()
+                model.widgetsTemp.addAll(list)
                 openConfirm = false
             },
             onCancelClick = {
@@ -136,7 +153,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
         ShowConfirmDialog(
             text = "你确定要删除此控件吗",
             onSureClick = {
-                selectWidget?.let { model.delete(it) }
+                model.widgetsTemp.remove(model.selectWidget)
                 openWidgetDelete = false
             },
             onCancelClick = {
@@ -180,6 +197,10 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
 
             },
             onEditClick = {
+                model.widgetsTemp.clear()
+                widgets.forEach {
+                    model.widgetsTemp.add(it.copy())//这里采用深度复制，浅复制是复制引用，会导致源数据修改
+                }
                 editMode = true
             },
             onRemoteModeClick = {
@@ -196,7 +217,7 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
             onRotateRightClick = {},
             onEnlargeClick = {},
             onReduceClick = {
-                if (selectWidget != null) {
+                if (model.selectWidget != null) {
 
                 }
             },
@@ -207,25 +228,30 @@ fun RemoteCompose(context: Context = LocalContext.current, model: RemoteViewMode
                 openWidgetSelect = true
             },
             onDeleteClick = {
-                if (selectWidget != null)
+                if (model.selectWidget != null)
                     openWidgetDelete = true
                 else
                     ToastUtil.toast(context, "请选择一个控件")
             },
             onCancelClick = {
                 editMode = false
-                selectWidget = null
+                model.selectWidget = null
             },
             onOKClick = {
                 editMode = false
-                selectWidget = null
+                model.deleteAll()
+                runBlocking {
+                    delay(2)//延时等待上一次数据库操作完成
+                }
+                model.insert(model.widgetsTemp.toList())
+                model.selectWidget = null
             })
-        Widgets(editMode = editMode, selectWidget = selectWidget, onSelectClick = {
-            if (editMode) {
-                selectWidget = it
-                Log.d("1", "1")
-            }
-        })
+
+        if (editMode) {
+            WidgetsTemp()
+        } else {
+            Widgets(widgets = widgets)
+        }
 
         RemoteRecData(
             editModel = editMode,

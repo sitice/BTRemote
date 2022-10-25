@@ -55,10 +55,10 @@ fun Esp32Cam(context: Context = LocalContext.current, model: MainViewModel = vie
                     .height(50.dp),
                 shape = roundedCorner10dp,
                 textStyle = TextStyle(fontSize = 11.sp),
-                value = url, // 显示文本
+                value = url,
                 onValueChange = {
                     model.changeEsp32camIp(it)
-                }, // 文字改变时，就赋值给text
+                },
                 label = @Composable {
                     Text(text = "url")
                 },

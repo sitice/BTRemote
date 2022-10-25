@@ -124,12 +124,12 @@ class ColorPickerView : View {
             }
         }
         catch (e: Exception) {
-            Log.e(TAG, "getColor: ${e.message}")
+            //Log.e(TAG, "getColor: ${e.message}")
         }
     }
 
     private fun checkXY(x: Float, y: Float): Boolean {
-        Log.d(TAG, "checkXY: x $x y $y mx $width my $height")
+       // Log.d(TAG, "checkXY: x $x y $y mx $width my $height")
         return width >= x && height >= y && x >= 0 && y >= 0
     }
 

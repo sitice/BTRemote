@@ -36,17 +36,18 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun WidgetToolBar(
-    editMode:Boolean,
+    editMode: Boolean,
     modifier: Modifier,
-    onRotateLeftClick:()->Unit,
-    onRotateRightClick:()->Unit,
-    onEnlargeClick:()->Unit,
-    onReduceClick:()->Unit,
-    onResetClick:()->Unit,
-    onAddClick:()->Unit,
-    onDeleteClick:()->Unit,
-    onCancelClick:()->Unit,
-    onOKClick:()->Unit,
+    onRotateLeftClick: () -> Unit,
+    onRotateRightClick: () -> Unit,
+    onEnlargeClick: () -> Unit,
+    onReduceClick: () -> Unit,
+    onResetClick: () -> Unit,
+    onAddClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onCancelClick: () -> Unit,
+    onOKClick: () -> Unit,
+    model: RemoteViewModel = viewModel()
 ) {
 
     AnimatedVisibility(
@@ -58,9 +59,10 @@ fun WidgetToolBar(
         Row(
             modifier = Modifier
                 .padding(10.dp)
-                .background(Color.White, RoundedCornerShape(10.dp))
+                .background(Color.White, RoundedCornerShape(10.dp)), verticalAlignment = Alignment.CenterVertically
 
         ) {
+            model.selectWidget?.let { Text(text = it.name,modifier.padding(start = 10.dp, end = 10.dp)) }
             IconButton(onClick = onRotateLeftClick, modifier = Modifier.size(30.dp)) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_rotate_left_black_24dp),
@@ -100,7 +102,7 @@ fun WidgetToolBar(
             IconButton(
                 onClick = onResetClick, modifier = Modifier
                     .padding(start = 10.dp)
-                    .size(30.dp)
+                    .size(25.dp)
 
             ) {
                 Icon(

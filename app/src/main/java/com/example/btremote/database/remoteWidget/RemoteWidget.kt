@@ -1,6 +1,8 @@
 package com.example.btremote.database.remoteWidget
 
 import androidx.compose.foundation.gestures.TransformableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
 import androidx.room.*
 
 @Entity
@@ -18,6 +20,9 @@ data class RemoteWidget(
     var arg2: Byte
 ) {
     @Ignore
-    lateinit var state: TransformableState
-
+    var offset = mutableStateOf(Offset(x = offsetX, y = offsetY))
+    @Ignore
+    var zoom = mutableStateOf(scale)
+    @Ignore
+    var rotate = mutableStateOf(angle)
 }

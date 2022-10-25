@@ -41,28 +41,6 @@ fun NewWidgetDialog(
         Surface(
             shape = RoundedCornerShape(20.dp)
         ) {
-            var name by remember {
-                mutableStateOf("")
-            }
-
-            var key by remember {
-                mutableStateOf("")
-            }
-
-            var len by remember {
-                mutableStateOf("")
-            }
-
-            var nameError by remember {
-                mutableStateOf(false)
-            }
-
-            var keyError by remember {
-                mutableStateOf(false)
-            }
-            var lenError by remember {
-                mutableStateOf(false)
-            }
 
             Column(
                 modifier = Modifier
@@ -84,21 +62,21 @@ fun NewWidgetDialog(
                         errorIndicatorColor = Color.Red, // 错误时的颜色，红色
                         disabledIndicatorColor = Color.Gray // 不可用时的颜色，灰色
                     ),
-                    isError = nameError,
+                    isError = model.nameError,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = roundedCorner10dp,
                     textStyle = TextStyle(fontSize = 11.sp),
-                    value = name, // 显示文本
+                    value = model.name, // 显示文本
                     onValueChange = {
-                        name = it
-                        nameError = false
+                        model.name = it
+                        model.nameError = false
                         model.widgets.map { list ->
                             list.forEach { widget ->
                                 Log.d("1","1")
-                                if (name == widget.name) {
-                                    nameError = true
+                                if (model.name == widget.name) {
+                                    model.nameError = true
                                     ToastUtil.toast(context, "名字重复")
                                     return@map
                                 }
@@ -121,18 +99,18 @@ fun NewWidgetDialog(
                             errorIndicatorColor = Color.Red, // 错误时的颜色，红色
                             disabledIndicatorColor = Color.Gray // 不可用时的颜色，灰色
                         ),
-                        isError = keyError,
+                        isError = model.keyError,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = roundedCorner10dp,
                         textStyle = TextStyle(fontSize = 11.sp),
-                        value = key, // 显示文本
+                        value = model.key, // 显示文本
                         onValueChange = {
-                            key = it
-                            keyError = false
-                            if (key.toInt() > 255) {
-                                keyError = true
+                            model.key = it
+                            model.keyError = false
+                            if (model.key.toInt() > 255) {
+                                model.keyError = true
                                 ToastUtil.toast(context, "键值取值错误")
                             }
                         }, // 文字改变时，就赋值给text
@@ -182,18 +160,18 @@ fun NewWidgetDialog(
                             errorIndicatorColor = Color.Red, // 错误时的颜色，红色
                             disabledIndicatorColor = Color.Gray // 不可用时的颜色，灰色
                         ),
-                        isError = lenError,
+                        isError = model.lenError,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = roundedCorner10dp,
                         textStyle = TextStyle(fontSize = 11.sp),
-                        value = len, // 显示文本
+                        value = model.len, // 显示文本
                         onValueChange = {
-                            len = it
-                            lenError = false
-                            if (len.toInt() > 10 || len.toInt() < 2) {
-                                lenError = true
+                            model.len = it
+                            model.lenError = false
+                            if (model.len.toInt() > 10 || model.len.toInt() < 2) {
+                                model.lenError = true
                                 ToastUtil.toast(context, "请输入正确的长度")
                             }
                         }, // 文字改变时，就赋值给text
@@ -225,13 +203,13 @@ fun NewWidgetDialog(
                     Spacer(modifier = Modifier.width(30.dp))
                     Button(
                         onClick = {
-                            if (name != "" && !nameError) {
-                                if (!keyError) {
-                                    if (!lenError) {
+                            if (model.name != "" && !model.nameError) {
+                                if (!model.keyError) {
+                                    if (!model.lenError) {
                                         onSureClick(
-                                            name,
-                                            if (key == "") 0 else key.toByte(),
-                                            if (len == "") 0 else len.toByte()
+                                            model. name,
+                                            if (model.key == "") 0 else model.key.toByte(),
+                                            if (model.len == "") 0 else model.len.toByte()
                                         )
                                     } else {
                                         ToastUtil.toast(context, "长度错误")

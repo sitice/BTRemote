@@ -29,9 +29,9 @@ fun Rocker(
     modifier: Modifier,
     backgroundSize: Dp,
     rockerSize: Dp,
-    enable: Boolean,
     onXChange: (Byte) -> Unit,
-    onYChange: (Byte) -> Unit
+    onYChange: (Byte) -> Unit,
+    enable: Boolean = true
 ) {
     var offset by remember {
         mutableStateOf(Offset.Zero)

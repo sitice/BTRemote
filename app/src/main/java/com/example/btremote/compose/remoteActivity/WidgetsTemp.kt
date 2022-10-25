@@ -1,42 +1,40 @@
 package com.example.btremote.compose.remoteActivity
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.*
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.btremote.R
 import com.example.btremote.database.remoteWidget.RemoteWidget
 import com.example.btremote.viewmodel.RemoteViewModel
-import kotlin.experimental.and
-import kotlin.math.roundToInt
 
 @Composable
-fun Widgets(widgets: List<RemoteWidget>) {
+fun WidgetsTemp(
+    model:RemoteViewModel = viewModel()
+) {
     val haptic = LocalHapticFeedback.current
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center)
     {
-        widgets.forEach { widget ->
-            val modifier = Modifier
+        model.widgetsTemp.forEach { widget ->
+//            widget.state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
+//                widget.zoom.value *= zoomChange
+//                widget.rotate.value += rotationChange
+//                widget.offset.value += offsetChange
+//            }
+            var modifier = Modifier
                 .graphicsLayer(
                     translationX = widget.offset.value.x,
                     translationY = widget.offset.value.y,
@@ -44,6 +42,22 @@ fun Widgets(widgets: List<RemoteWidget>) {
                     scaleY = widget.zoom.value,
                     rotationZ = widget.rotate.value
                 )
+                .pointerInput(UInt) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        widget.offset.value += dragAmount
+                        widget.offsetX = widget.offset.value.x
+                        widget.offsetY = widget.offset.value.y
+                        model.selectWidget = widget
+                    }
+                }
+            if (model.selectWidget == widget) {
+                modifier = modifier.border(
+                    width = 2.dp,
+                    color = Color.Yellow,
+                    shape = RoundedCornerShape(10.dp)
+                )
+            }
             when (widget.type) {
                 WidgetType.ROCKER -> {
                     Rocker(
@@ -51,6 +65,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                             .size(170.dp),
                         backgroundSize = 150.dp,
                         rockerSize = 70.dp,
+                        enable = false,
                         onXChange = { x -> widget.arg1 = x },
                         onYChange = { y -> widget.arg2 = y }
                     )
@@ -58,8 +73,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                 WidgetType.UPPER_BUTTON -> {
                     IconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            widget.arg2 = widget.arg1
+                            model.selectWidget = widget
                         },
                         modifier = modifier.size(50.dp),
                     ) {
@@ -72,8 +86,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                 WidgetType.LOWER_BUTTON -> {
                     IconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            widget.arg2 = widget.arg1
+                            model.selectWidget = widget
                         },
                         modifier = modifier.size(50.dp),
                     ) {
@@ -86,8 +99,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                 WidgetType.LEFT_BUTTON -> {
                     IconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            widget.arg2 = widget.arg1
+                            model.selectWidget = widget
                         },
                         modifier = modifier.size(50.dp),
                     ) {
@@ -100,8 +112,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                 WidgetType.RIGHT_BUTTON -> {
                     IconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            widget.arg2 = widget.arg1
+                            model.selectWidget = widget
                         },
                         modifier = modifier.size(50.dp),
                     ) {
@@ -114,8 +125,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                 WidgetType.XBOX_A -> {
                     IconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            widget.arg2 = widget.arg1
+                            model.selectWidget = widget
                         },
                         modifier = modifier.size(50.dp),
                     ) {
@@ -128,8 +138,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                 WidgetType.XBOX_B -> {
                     IconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            widget.arg2 = widget.arg1
+                            model.selectWidget = widget
                         },
                         modifier = modifier.size(50.dp),
                     ) {
@@ -142,8 +151,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                 WidgetType.XBOX_X -> {
                     IconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            widget.arg2 = widget.arg1
+                            model.selectWidget = widget
                         },
                         modifier = modifier.size(50.dp),
                     ) {
@@ -156,8 +164,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                 WidgetType.XBOX_Y -> {
                     IconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            widget.arg2 = widget.arg1
+                            model.selectWidget = widget
                         },
                         modifier = modifier.size(50.dp),
                     ) {
@@ -180,6 +187,7 @@ fun Widgets(widgets: List<RemoteWidget>) {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             widget.arg2 = progress.toInt().toByte()
                         },
+                        enabled = false,
                         valueRange = 0f..widget.arg1.toFloat(),
                         steps = 1,
                         colors = SliderDefaults.colors(
@@ -196,20 +204,16 @@ fun Widgets(widgets: List<RemoteWidget>) {
                 WidgetType.BUTTON -> {
                     Button(
                         onClick = {
-                            Log.d("color",widget.color.toString())
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            widget.arg2 = widget.arg1
+                            model.selectWidget = widget
                         },
                         modifier = modifier
                             .width(60.dp)
                             .height(30.dp),
                         shape = RoundedCornerShape(15.dp),
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color((widget.color!!)+0xff000000)
+                            backgroundColor = Color(widget.color ?: 0xffdf00),
                         )
-                    ) {
-
-                    }
+                    ) {}
                 }
             }
         }
